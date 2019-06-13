@@ -489,6 +489,8 @@ class LedgerImpl : public ledger::Ledger,
 
   void FetchBalance(ledger::FetchBalanceCallback callback) override;
 
+  std::string GetUpholdToken();
+
  private:
   void AddRecurringPayment(const std::string& publisher_id,
                            const double& value) override;
