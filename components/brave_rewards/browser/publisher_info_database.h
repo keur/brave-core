@@ -91,6 +91,10 @@ class PublisherInfoDatabase {
 
   bool RemoveAllPendingContributions();
 
+  void GetAllTransactions(ledger::PublisherInfoList* list,
+                          int32_t month,
+                          uint32_t year);
+
   // Returns the current version of the publisher info database
   int GetCurrentVersion();
 

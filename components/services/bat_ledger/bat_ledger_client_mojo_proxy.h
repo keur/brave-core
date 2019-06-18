@@ -159,6 +159,11 @@ class BatLedgerClientMojoProxy : public ledger::LedgerClient,
       const std::string& publisher_key,
       const std::string& publisher_name) override;
 
+  void GetAllTransactions(
+      int32_t month,
+      uint32_t year,
+      ledger::PublisherInfoListCallback callback) override;
+
  private:
   bool Connected() const;
 

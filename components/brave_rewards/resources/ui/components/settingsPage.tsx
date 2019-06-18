@@ -41,6 +41,9 @@ class SettingsPage extends React.Component<Props, {}> {
     this.actions.getTransactionHistory()
     this.actions.getAdsData()
     this.actions.getExcludedSites()
+
+    const currentTime = new Date()
+    this.actions.getMonthlyStatements(currentTime.getMonth().toString(), currentTime.getFullYear().toString())
   }
 
   componentDidMount () {

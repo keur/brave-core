@@ -692,4 +692,26 @@ void BatLedgerImpl::FetchBalance(
                 _2));
 }
 
+void BatLedgerImpl::OnGetAllTransactions(
+    CallbackHolder<GetRecurringTipsCallback>* holder,
+    ledger::PublisherInfoList list,
+    uint32_t num) {
+  if (holder->is_valid())
+    std::move(holder->get()).Run(std::move(list));
+
+  delete holder;
+}
+
+void BatLedgerImpl::GetAllTransactions(
+    int32_t month,
+    uint32_t year,
+    GetAllTransactionsCallback callback) {
+  auto* holder = new CallbackHolder<GetAllTransactionsCallback>(
+      AsWeakPtr(), std::move(callback));
+
+  ledger_->GetAllTransactions(std::bind(
+      BatLedgerImpl::OnGetAllTransactions, holder, _1, _2),
+        ToLedgerPublisherMonth(month), year);
+}
+
 }  // namespace bat_ledger

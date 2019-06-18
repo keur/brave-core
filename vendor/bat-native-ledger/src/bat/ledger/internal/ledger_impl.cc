@@ -1657,4 +1657,18 @@ void LedgerImpl::FetchBalance(ledger::FetchBalanceCallback callback) {
   bat_wallet_->FetchBalance(callback);
 }
 
+void LedgerImpl::GetAllTransactions(
+    const ledger::PublisherInfoListCallback& callback,
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year) {
+  ledger_client_->GetAllTransactions(
+      month,
+      year,
+      std::bind(&LedgerImpl::ModifyPublisherListVerified,
+                this,
+                _1,
+                _2,
+                callback));
+}
+
 }  // namespace bat_ledger

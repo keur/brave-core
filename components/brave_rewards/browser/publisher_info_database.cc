@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "bat/ledger/media_event_info.h"
 #include "bat/ledger/pending_contribution.h"
 #include "build/build_config.h"
@@ -162,27 +163,48 @@ bool PublisherInfoDatabase::InsertContributionInfo(
   return statement.Run();
 }
 
-// void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
-//                                                ledger::ACTIVITY_MONTH month,
-//                                                int year) {
-//   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
+                                               int32_t month,
+                                               uint32_t year) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-//   bool initialized = Init();
-//   DCHECK(initialized);
+  bool initialized = Init();
+  DCHECK(initialized);
 
-//   if(!initialized) {
-//     return;
-//   }
+  if(!initialized) {
+    return;
+  }
 
-//   sql::Statement info_sql(db_.GetUniqueStatement(
-//       "SELECT pi.publisher_id, pi.name, pi.verified, pi.favicon, "
-//       "pi.provider, ci.probi, ci.date, ci.category, ci.month, ci.year, "
-//       "ai.percent "
-//       "FROM contribution_info as ci "
-//       "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
-//       "INNER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "));
+  sql::Statement info_sql(db_.GetUniqueStatement(
+      "SELECT pi.publisher_id, pi.name, pi.verified, pi.favicon, "
+      "pi.provider, ci.probi, ci.date, ci.category, ci.month, ci.year, "
+      "ai.percent "
+      "FROM contribution_info as ci "
+      "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
+      "INNER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "
+      "WHERE ci.month = ? AND ci.year = ?"));
+  info_sql.BindInt(0, month);
+  info_sql.BindInt(1, year);
 
-// }
+  while (info_sql.Step()) {
+    auto publisher = ledger::PublisherInfo::New();
+
+    publisher->id = info_sql.ColumnString(0);
+    publisher->name = info_sql.ColumnString(1);
+    publisher->url = info_sql.ColumnString(2);
+    publisher->favicon_url = info_sql.ColumnString(3);
+    publisher->verified = info_sql.ColumnBool(4);
+    publisher->provider = info_sql.ColumnString(5);
+    auto contribution = ledger::mojom::ContributionInfo::New();
+    const std::string string_value = info_sql.ColumnString(6);
+    double value;
+    contribution->value = base::StringToDouble(string_value, &value)
+        ? value : 0.0;
+    contribution->date = info_sql.ColumnInt64(7);
+    publisher->contributions.push_back(std::move(contribution));
+    list->push_back(std::move(publisher));
+  }
+}
 
 void PublisherInfoDatabase::GetOneTimeTips(ledger::PublisherInfoList* list,
                                            ledger::ACTIVITY_MONTH month,

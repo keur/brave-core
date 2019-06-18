@@ -242,6 +242,8 @@ class RewardsService : public KeyedService {
       const std::string& type,
       const std::map<std::string, std::string>& args,
       GetShareURLCallback callback) = 0;
+  virtual void GetMonthlyStatements(
+      int32_t month, uint32_t year) = 0;
 
   virtual void FetchBalance(FetchBalanceCallback callback) = 0;
 

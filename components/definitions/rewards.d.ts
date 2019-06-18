@@ -56,6 +56,7 @@ declare namespace Rewards {
     excludedList: ExcludedPublisher[]
     firstLoad: boolean | null
     grants?: Grant[]
+    hasMonthlyStatement: boolean
     pendingContributions: PendingContribution[]
     pendingContributionTotal: number
     reconcileStamp: number
@@ -141,6 +142,11 @@ declare namespace Rewards {
     tipDate?: number
   }
 
+  export interface MonthlyStatement {
+    publisher: Publisher
+    contribution: Contribution
+  }
+
   export interface ExcludedPublisher {
     id: string
     verified: boolean
@@ -207,5 +213,11 @@ declare namespace Rewards {
     total: number
     rates: Record<string, number>
     wallets: Record<string, number>
+  }
+
+  export interface Contribution {
+    publisherKey: string
+    value: number
+    date: number
   }
 }

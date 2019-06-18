@@ -296,6 +296,11 @@ class LEDGER_EXPORT Ledger {
     const ledger::PendingContributionsTotalCallback& callback) = 0;
 
   virtual void FetchBalance(ledger::FetchBalanceCallback callback) = 0;
+
+  virtual void GetAllTransactions(
+      const ledger::PublisherInfoListCallback& callback,
+      ledger::ACTIVITY_MONTH month,
+      uint32_t year) = 0;
 };
 
 }  // namespace ledger

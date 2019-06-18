@@ -136,6 +136,7 @@ class RewardsDOMHandler : public WebUIMessageHandler,
   void OnFetchBalance(
     int32_t result,
     std::unique_ptr<brave_rewards::Balance> balance);
+  void GetMonthlyStatements(const base::ListValue* args);
 
   // RewardsServiceObserver implementation
   void OnWalletInitialized(brave_rewards::RewardsService* rewards_service,
@@ -338,6 +339,9 @@ void RewardsDOMHandler::RegisterMessages() {
       base::Unretained(this)));
   web_ui()->RegisterMessageCallback("brave_rewards.fetchBalance",
       base::BindRepeating(&RewardsDOMHandler::FetchBalance,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("brave_rewards.getMonthlyStatements",
+      base::BindRepeating(&RewardsDOMHandler::GetMonthlyStatements,
       base::Unretained(this)));
 }
 
@@ -1295,6 +1299,52 @@ void RewardsDOMHandler::FetchBalance(const base::ListValue* args) {
   }
 }
 
+void RewardsDOMHandler::GetMonthlyStatements(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  if (!rewards_service_) {
+    return;
+  }
+  std::string month;
+  args->GetString(0, &month);
+  std::string year;
+  args->GetString(1, &year);
+  int32_t month_conv;
+  uint32_t year_conv;
+  base::StringToInt(month, &month_conv);
+  base::StringToUint(year, &year_conv);
+  rewards_service_->GetMonthlyStatements(month_conv, year_conv);
+}
+
+// void RewardsDOMHandler::OnGetMonthlyStatements(
+
+
+
+// void RewardsDOMHandler::OnGetRecurringTips(
+//     std::unique_ptr<brave_rewards::ContentSiteList> list) {
+//   if (web_ui()->CanCallJavascript()) {
+//     auto publishers = std::make_unique<base::ListValue>();
+
+//     if (list) {
+//       for (auto const& item : *list) {
+//         auto publisher = std::make_unique<base::DictionaryValue>();
+//         publisher->SetString("id", item.id);
+//         publisher->SetDouble("percentage", item.percentage);
+//         publisher->SetString("publisherKey", item.id);
+//         publisher->SetBoolean("verified", item.verified);
+//         publisher->SetInteger("excluded", item.excluded);
+//         publisher->SetString("name", item.name);
+//         publisher->SetString("provider", item.provider);
+//         publisher->SetString("url", item.url);
+//         publisher->SetString("favIcon", item.favicon_url);
+//         publisher->SetInteger("tipDate", 0);
+//         publishers->Append(std::move(publisher));
+//       }
+//     }
+
+//     web_ui()->CallJavascriptFunctionUnsafe("brave_rewards.recurringTips",
+//                                            *publishers);
+//   }
+// }
 }  // namespace
 
 BraveRewardsUI::BraveRewardsUI(content::WebUI* web_ui, const std::string& name)

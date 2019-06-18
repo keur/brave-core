@@ -489,6 +489,11 @@ class LedgerImpl : public ledger::Ledger,
 
   void FetchBalance(ledger::FetchBalanceCallback callback) override;
 
+  void GetAllTransactions(
+      const ledger::PublisherInfoListCallback& callback,
+      ledger::ACTIVITY_MONTH month,
+      uint32_t year) override;
+
  private:
   void AddRecurringPayment(const std::string& publisher_id,
                            const double& value) override;

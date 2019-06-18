@@ -803,4 +803,25 @@ void BatLedgerClientMojoProxy::OnContributeUnverifiedPublishers(
                                                        publisher_name);
 }
 
+void OnGetAllTransactions(const ledger::PublisherInfoListCallback& callback,
+                      ledger::PublisherInfoList publisher_info_list,
+                      uint32_t next_record) {
+  callback(std::move(publisher_info_list), next_record);
+}
+
+void BatLedgerClientMojoProxy::GetAllTransactions(
+    int32_t month,
+    uint32_t year,
+    ledger::PublisherInfoListCallback callback) {
+  if (!Connected()) {
+    callback(ledger::PublisherInfoList(), 0);
+    return;
+  }
+
+  bat_ledger_client_->GetAllTransactions(
+      month,
+      year,
+      base::BindOnce(&OnGetAllTransactions, std::move(callback)));
+}
+
 }  // namespace bat_ledger

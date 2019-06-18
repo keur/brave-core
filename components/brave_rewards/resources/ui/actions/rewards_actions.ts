@@ -228,3 +228,8 @@ export const onBalance = (status: number, balance: Rewards.Balance) => action(ty
   status,
   balance
 })
+
+export const getMonthlyStatements = (month: string, year: string) => action(types.GET_MONTHLY_STATEMENTS, {
+  month,
+  year
+})

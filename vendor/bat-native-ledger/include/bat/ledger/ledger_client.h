@@ -245,6 +245,11 @@ class LEDGER_EXPORT LedgerClient {
       ledger::Result result,
       const std::string& publisher_key,
       const std::string& publisher_name) = 0;
+
+  virtual void GetAllTransactions(
+      int32_t month,
+      uint32_t year,
+      ledger::PublisherInfoListCallback callback) = 0;
 };
 
 }  // namespace ledger

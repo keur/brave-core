@@ -68,7 +68,8 @@ export const defaultState: Rewards.State = {
     total: 0,
     rates: {},
     wallets: {}
-  }
+  },
+  hasMonthlyStatement: false
 }
 
 const cleanData = (state: Rewards.State) => {

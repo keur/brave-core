@@ -2366,6 +2366,19 @@ ledger::PublisherInfoList GetOneTimeTipsOnFileTaskRunner(
   return list;
 }
 
+ledger::PublisherInfoList GetAllTransactionsOnFileTaskRunner(
+    PublisherInfoDatabase* backend,
+    int32_t month,
+    uint32_t year) {
+  ledger::PublisherInfoList list;
+  if (!backend) {
+    return list;
+  }
+
+  backend->GetAllTransactions(&list, month, year);
+  return list;
+}
+
 void RewardsServiceImpl::GetOneTimeTips(
     ledger::PublisherInfoListCallback callback) {
   base::PostTaskAndReplyWithResult(file_task_runner_.get(), FROM_HERE,
@@ -2376,7 +2389,30 @@ void RewardsServiceImpl::GetOneTimeTips(
                  callback));
 }
 
+void RewardsServiceImpl::GetAllTransactions(
+    int32_t month,
+    uint32_t year,
+    ledger::PublisherInfoListCallback callback) {
+  base::PostTaskAndReplyWithResult(file_task_runner_.get(), FROM_HERE,
+      base::Bind(&GetAllTransactionsOnFileTaskRunner,
+                  publisher_info_backend_.get(),
+                  month, year),
+      base::Bind(&RewardsServiceImpl::OnGetAllTransactions,
+                  AsWeakPtr(),
+                  callback));
+}
+
 void RewardsServiceImpl::OnGetOneTimeTips(
+    ledger::PublisherInfoListCallback callback,
+    ledger::PublisherInfoList list) {
+  if (!Connected()) {
+    return;
+  }
+
+  callback(std::move(list), 0);
+}
+
+void RewardsServiceImpl::OnGetAllTransactions(
     ledger::PublisherInfoListCallback callback,
     ledger::PublisherInfoList list) {
   if (!Connected()) {
@@ -3271,5 +3307,24 @@ void RewardsServiceImpl::FetchBalance(FetchBalanceCallback callback) {
                      AsWeakPtr(),
                      std::move(callback)));
 }
+
+void RewardsServiceImpl::OnGetMonthlyStatement(
+    ledger::PublisherInfoList list) {
+
+}
+
+void RewardsServiceImpl::GetMonthlyStatements(int32_t month, uint32_t year) {
+  if (!Connected()) {
+    return;
+  }
+  bat_ledger_->GetAllTransactions(month, year,
+      base::BindOnce(&RewardsServiceImpl::OnGetMonthlyStatement,
+          AsWeakPtr()));
+}
+
+// void RewardsServiceImpl::TriggerOnMonthlyStatement(
+//     ledger::PublisherInfoList list) {
+
+// }
 
 }  // namespace brave_rewards

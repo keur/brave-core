@@ -18,6 +18,7 @@ import { WalletAddIcon } from 'brave-ui/components/icons'
 import { AlertWallet } from 'brave-ui/features/rewards/walletWrapper'
 import { Provider } from 'brave-ui/features/rewards/profile'
 import { DetailRow as PendingDetailRow, PendingType } from 'brave-ui/features/rewards/tablePending'
+import { DetailRow as ContributeRows } from 'brave-ui/features/rewards/tableContribute'
 // Utils
 import { getLocale } from '../../../../common/locale'
 import * as rewardsActions from '../actions/rewards_actions'
@@ -168,9 +169,11 @@ class PageWallet extends React.Component<Props, State> {
   }
 
   onModalActivityToggle = () => {
+    console.log('========MODAL ACTIVITY BEFORE: ' + this.state.modalActivity)
     this.setState({
       modalActivity: !this.state.modalActivity
     })
+    console.log('========MODAL ACTIVITY: ' + this.state.modalActivity)
   }
 
   onModalAddFundsToggle = () => {
@@ -346,6 +349,132 @@ class PageWallet extends React.Component<Props, State> {
     this.actions.removeAllPendingContribution()
   }
 
+  doNothing = () => {}
+
+  getMonthlyStatementAutoContribute = (): ContributeRows[] => {
+    //const autoContributeInfo = this.props.rewardsData.
+    return [
+      {
+        profile: {
+          name: 'Bart Baker',
+          verified: true,
+          provider: 'youtube',
+          src: ''
+        },
+        url: 'https://brave.com',
+        attention: 40,
+        onRemove: this.doNothing,
+        token: {
+          value: '5.0',
+          converted: '5.00'
+        }
+      }
+    ]
+  }
+
+  getMonthlyStatementTransaction = () => {
+    return [
+      {
+        date: '6/1',
+        type: 'deposit',
+        description: 'Brave Ads payment for May',
+        amount: {
+          value: '5.0',
+          converted: '5.00'
+        }
+      }
+    ]
+  }
+
+  getMonthlyStatementMonthsAvailable = () => {
+    return {
+      'aug-2018': 'August 2018',
+      'jul-2018': 'July 2018',
+      'jun-2018': 'June 2018',
+      'may-2018': 'May 2018',
+      'apr-2018': 'April 2018'
+    }
+  }
+
+  getMonthlyStatementSelectedMonth = () => {
+    return 'aug-2018'
+  }
+
+  getMonthlyStatementSummary = () => {
+    return [
+      {
+        text: 'Token Grant available',
+        type: 'grant',
+        token: {
+          value: '10.0',
+          converted: '5.20'
+        }
+      },
+      {
+        text: 'Earnings from Brave Ads',
+        type: 'ads',
+        token: {
+          value: '10.0',
+          converted: '5.20'
+        }
+      },
+      {
+        text: 'Brave Contribute',
+        type: 'contribute',
+        notPaid: true,
+        token: {
+          value: '10.0',
+          converted: '5.20',
+          isNegative: true
+        }
+      },
+      {
+        text: 'Recurring Tips',
+        type: 'recurring',
+        notPaid: true,
+        token: {
+          value: '2.0',
+          converted: '1.1',
+          isNegative: true
+        }
+      },
+      {
+        text: 'One-timen Tips',
+        type: 'donations',
+        token: {
+          value: '19.0',
+          converted: '10.10',
+          isNegative: true
+        }
+      }
+    ]
+  }
+
+  getMonthlyStatementTotal = () => {
+    return {
+      value: '1.0',
+      converted: '0.5'
+    }
+  }
+
+  getMonthlyStatementPaymentDay = () => {
+    return 12
+  }
+
+  getMonthlyStatementOpenBalance = () => {
+    return {
+      value: '10.0',
+      converted: '5.20'
+    }
+  }
+
+  getMonthlyStatementCloseBalance = () => {
+    return {
+      value: '11.0',
+      converted: '5.30'
+    }
+  }
+
   render () {
     const {
       connectedWallet,
@@ -354,7 +483,8 @@ class PageWallet extends React.Component<Props, State> {
       addresses,
       balance,
       ui,
-      pendingContributionTotal
+      pendingContributionTotal,
+      hasMonthlyStatement
     } = this.props.rewardsData
     const { total } = balance
     const { walletRecoverySuccess, emptyWallet, modalBackup } = ui
@@ -390,6 +520,8 @@ class PageWallet extends React.Component<Props, State> {
               : <WalletSummary
                 reservedAmount={pendingTotal}
                 reservedMoreLink={'https://brave.com/faq/#unclaimed-funds'}
+                hasActivity={hasMonthlyStatement}
+                onActivity={this.onModalActivityToggle}
                 {...this.getWalletSummary()}
               />
             : <WalletOff/>
@@ -428,7 +560,6 @@ class PageWallet extends React.Component<Props, State> {
             : null
         }
         {
-          // TODO NZ add actual data for the whole section
           this.state.modalActivity
             ? <ModalActivity
               contributeRows={[
@@ -441,7 +572,7 @@ class PageWallet extends React.Component<Props, State> {
                   },
                   url: 'https://brave.com',
                   attention: 40,
-                  onRemove: this.onModalActivityRemove,
+                  onRemove: this.doNothing,
                   token: {
                     value: '5.0',
                     converted: '5.00'
