@@ -43,6 +43,7 @@
 #include "brave/components/brave_rewards/browser/auto_contribution_props.h"
 #include "brave/components/brave_rewards/browser/balance_report.h"
 #include "brave/components/brave_rewards/browser/content_site.h"
+#include "brave/components/brave_rewards/browser/monthly_statement.h"
 #include "brave/components/brave_rewards/browser/publisher_banner.h"
 #include "brave/components/brave_rewards/browser/publisher_info_database.h"
 #include "brave/components/brave_rewards/browser/rewards_fetcher_service_observer.h"
@@ -168,6 +169,24 @@ ContentSite PublisherInfoToContentSite(
   content_site.weight = publisher_info.weight;
   content_site.reconcile_stamp = publisher_info.reconcile_stamp;
   return content_site;
+}
+
+MonthlyStatement PublisherInfoToMonthlyStatement(
+    const ledger::PublisherInfo& publisher_info,
+    const ledger::mojom::ContributionInfo& contribution_info) {
+  MonthlyStatement monthly_statement(publisher_info.id);
+  monthly_statement.percentage = publisher_info.percent;
+  monthly_statement.verified = publisher_info.verified;
+  monthly_statement.excluded = publisher_info.excluded;
+  monthly_statement.name = publisher_info.name;
+  monthly_statement.url = publisher_info.url;
+  monthly_statement.provider = publisher_info.provider;
+  monthly_statement.favicon_url = publisher_info.favicon_url;
+  monthly_statement.id = publisher_info.id;
+  monthly_statement.probi = contribution_info.value;
+  monthly_statement.category = contribution_info.category;
+  monthly_statement.date = contribution_info.date;
+  return monthly_statement;
 }
 
 std::string URLMethodToRequestType(ledger::URL_METHOD method) {
@@ -3309,20 +3328,35 @@ void RewardsServiceImpl::FetchBalance(FetchBalanceCallback callback) {
 }
 
 void RewardsServiceImpl::OnGetMonthlyStatement(
-    ledger::PublisherInfoList list) {
+    GetMonthlyStatementListCallback callback,
+    ledger::PublisherInfoList list,
+    uint32_t next_record) {
+  LOG(ERROR) << "==========CHECKING PUBLISHER COUNT: " << list.size();
+  std::unique_ptr<MonthlyStatementList> statement_list =
+      std::make_unique<MonthlyStatementList>();
 
+  for (auto &publisher : list) {
+    for (auto &contribution : publisher->contributions) {
+      statement_list->push_back(PublisherInfoToMonthlyStatement(
+        *publisher,
+        *contribution));
+    }
+  }
+
+  std::move(callback).Run(std::move(statement_list), next_record);
 }
 
 void RewardsServiceImpl::GetMonthlyStatements(
   int32_t month,
   uint32_t year,
-  GetMonthlyStatementCallback callback) {
+  GetMonthlyStatementListCallback callback) {
   if (!Connected()) {
     return;
   }
   bat_ledger_->GetAllTransactions(month, year,
-      base::BindOnce(&RewardsServiceImpl::OnGetContentSiteList,
-          AsWeakPtr()));
+      base::BindOnce(&RewardsServiceImpl::OnGetMonthlyStatement,
+          AsWeakPtr(),
+          std::move(callback)));
 }
 
 }  // namespace brave_rewards

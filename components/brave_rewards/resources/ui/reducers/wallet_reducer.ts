@@ -302,6 +302,10 @@ const walletReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State,
       ])
       break
     }
+    case types.ON_GET_MONTHLY_STATEMENTS: {
+      state = { ...state }
+      state.monthlyStatementList = action.payload.statementList
+    }
   }
 
   return state

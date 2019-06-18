@@ -81,9 +81,13 @@ LEDGER_EXPORT struct ActivityInfoFilter {
 
 LEDGER_EXPORT struct ContributionInfo {
   ContributionInfo() {}
-  ContributionInfo(const double &value_, const uint64_t& date_):
+  ContributionInfo(
+      const double &value_,
+      const uint64_t& date_,
+      const int32_t& category_) :
     value(value_),
-    date(date_) {}
+    date(date_),
+    category(category_) {}
 
   const std::string ToJson() const;
   bool loadFromJson(const std::string& json);
@@ -91,6 +95,7 @@ LEDGER_EXPORT struct ContributionInfo {
   std::string publisher;  // Filled only for recurrent tips
   double value;
   uint64_t date;
+  int32_t category;
 };
 
 LEDGER_EXPORT struct PublisherBanner {

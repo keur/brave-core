@@ -57,6 +57,7 @@ declare namespace Rewards {
     firstLoad: boolean | null
     grants?: Grant[]
     hasMonthlyStatement: boolean
+    monthlyStatementList: MonthlyStatement[]
     pendingContributions: PendingContribution[]
     pendingContributionTotal: number
     reconcileStamp: number
@@ -143,8 +144,17 @@ declare namespace Rewards {
   }
 
   export interface MonthlyStatement {
-    publisher: Publisher
-    contribution: Contribution
+    id: string,
+    verified: boolean
+    excluded: boolean
+    name: string
+    faviconUrl: string
+    url: string
+    provider: string
+    probi: string
+    category: number
+    date: string
+    percentage: string
   }
 
   export interface ExcludedPublisher {

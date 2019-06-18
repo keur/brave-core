@@ -7,6 +7,7 @@ struct ContributionInfo {
   string publisher;  // Filled only for recurrent tips
   double value;
   uint64 date;
+  uint32 category;
 };
 
 struct PublisherInfo {

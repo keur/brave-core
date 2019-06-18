@@ -217,7 +217,7 @@ class RewardsDOMHandler : public WebUIMessageHandler,
           notifications_list) override;
 
   void OnGetMonthlyStatements(
-    std::unique_ptr<brave_rewards::ContentSiteList> list,
+    std::unique_ptr<brave_rewards::MonthlyStatementList> list,
     uint32_t record);
 
   brave_rewards::RewardsService* rewards_service_;  // NOT OWNED
@@ -1304,10 +1304,29 @@ void RewardsDOMHandler::FetchBalance(const base::ListValue* args) {
 }
 
 void RewardsDOMHandler::OnGetMonthlyStatements(
-    std::unique_ptr<brave_rewards::ContentSiteList> list,
+    std::unique_ptr<brave_rewards::MonthlyStatementList> list,
     uint32_t record) {
   if (web_ui()->CanCallJavascript()) {
+    base::Value statements(base::Value::Type::LIST);
+    for (const auto& item : *list) {
+      base::Value statement(base::Value::Type::DICTIONARY);
+      statement.SetKey("id", base::Value(item.id));
+      statement.SetKey("publisherKey", base::Value(item.id));
+      statement.SetKey("percentage",
+          base::Value(std::to_string(item.percentage)));
+      statement.SetKey("verified", base::Value(item.verified));
+      statement.SetKey("excluded", base::Value(item.excluded));
+      statement.SetKey("name", base::Value(item.name));
+      statement.SetKey("provider", base::Value(item.provider));
+      statement.SetKey("url", base::Value(item.url));
+      statement.SetKey("favIcon", base::Value(item.favicon_url));
+      statement.SetKey("date", base::Value(std::to_string(item.date)));
+      statement.SetKey("category", base::Value(item.category));
+      statements.GetList().push_back(std::move(statement));
+    }
 
+    web_ui()->CallJavascriptFunctionUnsafe(
+         "brave_rewards.onGetMonthlyStatements", statements);
   }
 }
 

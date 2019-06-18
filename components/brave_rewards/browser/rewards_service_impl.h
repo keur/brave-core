@@ -30,6 +30,7 @@
 #include "brave/components/brave_rewards/browser/balance_report.h"
 #include "brave/components/brave_rewards/browser/content_site.h"
 #include "brave/components/brave_rewards/browser/contribution_info.h"
+#include "brave/components/brave_rewards/browser/monthly_statement.h"
 #include "ui/gfx/image/image.h"
 #include "brave/components/brave_rewards/browser/publisher_banner.h"
 #include "brave/components/brave_rewards/browser/rewards_service_private_observer.h"
@@ -254,7 +255,7 @@ class RewardsServiceImpl : public RewardsService,
   void GetMonthlyStatements(
       int32_t month,
       uint32_t year,
-      GetMonthlyStatementCallback callback) override;
+      GetMonthlyStatementListCallback callback) override;
 
   void FetchBalance(FetchBalanceCallback callback) override;
 
@@ -590,6 +591,11 @@ class RewardsServiceImpl : public RewardsService,
   void OnGetAllTransactions(
       ledger::PublisherInfoListCallback callback,
       ledger::PublisherInfoList list);
+
+  void OnGetMonthlyStatement(
+      GetMonthlyStatementListCallback callback,
+      ledger::PublisherInfoList list,
+      uint32_t next_record);
 
   bool Connected() const;
   void ConnectionClosed();

@@ -9,18 +9,28 @@ namespace brave_rewards {
 
   MonthlyStatement::MonthlyStatement() {}
 
+  MonthlyStatement::MonthlyStatement(const std::string& site_id) :
+      id(site_id),
+      verified(false),
+      excluded(false),
+      category(0),
+      date(0),
+      percentage(0) {
+  }
+
   MonthlyStatement::~MonthlyStatement() {}
 
   MonthlyStatement::MonthlyStatement(const MonthlyStatement &properties) {
     id = properties.id;
     verified = properties.verified;
+    excluded = properties.excluded;
     name = properties.name;
     favicon_url = properties.favicon_url;
     url = properties.url;
     provider = properties.provider;
     probi = properties.probi;
-    month = properties.month;
-    year = properties.year;
+    date = properties.date;
     category = properties.category;
+    percentage = properties.percentage;
   }
 }  // namespace brave_rewards

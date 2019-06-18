@@ -69,6 +69,7 @@ export const defaultState: Rewards.State = {
     rates: {},
     wallets: {}
   },
+  monthlyStatementList: [],
   hasMonthlyStatement: false
 }
 

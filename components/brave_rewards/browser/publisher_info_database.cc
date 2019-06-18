@@ -176,15 +176,15 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
   }
 
   sql::Statement info_sql(db_.GetUniqueStatement(
-      "SELECT pi.publisher_id, pi.name, pi.verified, pi.favicon, "
-      "pi.provider, ci.probi, ci.date, ci.category, ci.month, ci.year, "
-      "ai.percent "
+      "SELECT pi.publisher_id, pi.name, pi.url, pi.verified, pi.favicon, "
+      "pi.provider, ci.probi, ci.date, ci.category, "
+      "ai.percent, pi.excluded "
       "FROM contribution_info as ci "
       "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
-      "INNER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "
-      "WHERE ci.month = ? AND ci.year = ?"));
-  info_sql.BindInt(0, month);
-  info_sql.BindInt(1, year);
+      "LEFT OUTER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "));
+      // "WHERE ci.month = ? AND ci.year = ?")); // UNCOMMENT DURING CLEANUP
+  // info_sql.BindInt(0, month);
+  // info_sql.BindInt(1, year);
 
   while (info_sql.Step()) {
     auto publisher = ledger::PublisherInfo::New();
@@ -192,8 +192,8 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
     publisher->id = info_sql.ColumnString(0);
     publisher->name = info_sql.ColumnString(1);
     publisher->url = info_sql.ColumnString(2);
-    publisher->favicon_url = info_sql.ColumnString(3);
-    publisher->verified = info_sql.ColumnBool(4);
+    publisher->verified = info_sql.ColumnBool(3);
+    publisher->favicon_url = info_sql.ColumnString(4);
     publisher->provider = info_sql.ColumnString(5);
     auto contribution = ledger::mojom::ContributionInfo::New();
     const std::string string_value = info_sql.ColumnString(6);
@@ -201,7 +201,10 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
     contribution->value = base::StringToDouble(string_value, &value)
         ? value : 0.0;
     contribution->date = info_sql.ColumnInt64(7);
+    contribution->category = info_sql.ColumnInt(8);
     publisher->contributions.push_back(std::move(contribution));
+    publisher->percent = info_sql.ColumnInt(9);
+    publisher->excluded = info_sql.ColumnBool(10);
     list->push_back(std::move(publisher));
   }
 }
