@@ -3313,18 +3313,16 @@ void RewardsServiceImpl::OnGetMonthlyStatement(
 
 }
 
-void RewardsServiceImpl::GetMonthlyStatements(int32_t month, uint32_t year) {
+void RewardsServiceImpl::GetMonthlyStatements(
+  int32_t month,
+  uint32_t year,
+  GetMonthlyStatementCallback callback) {
   if (!Connected()) {
     return;
   }
   bat_ledger_->GetAllTransactions(month, year,
-      base::BindOnce(&RewardsServiceImpl::OnGetMonthlyStatement,
+      base::BindOnce(&RewardsServiceImpl::OnGetContentSiteList,
           AsWeakPtr()));
 }
-
-// void RewardsServiceImpl::TriggerOnMonthlyStatement(
-//     ledger::PublisherInfoList list) {
-
-// }
 
 }  // namespace brave_rewards

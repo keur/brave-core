@@ -693,11 +693,11 @@ void BatLedgerImpl::FetchBalance(
 }
 
 void BatLedgerImpl::OnGetAllTransactions(
-    CallbackHolder<GetRecurringTipsCallback>* holder,
+    CallbackHolder<GetAllTransactionsCallback>* holder,
     ledger::PublisherInfoList list,
     uint32_t num) {
   if (holder->is_valid())
-    std::move(holder->get()).Run(std::move(list));
+    std::move(holder->get()).Run(std::move(list), num);
 
   delete holder;
 }

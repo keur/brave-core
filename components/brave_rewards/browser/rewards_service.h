@@ -74,6 +74,8 @@ using GetRecurringTipsCallback = base::OnceCallback<void(
     std::unique_ptr<brave_rewards::ContentSiteList>)>;
 using GetOneTimeTipsCallback = base::OnceCallback<void(
     std::unique_ptr<brave_rewards::ContentSiteList>)>;
+using GetMonthlyStatementCallback = base::OnceCallback<void(
+    std::unique_ptr<brave_rewards::ContentSiteList>, uint32_t)>;
 using GetPublisherBannerCallback =
     base::OnceCallback<void(std::unique_ptr<brave_rewards::PublisherBanner>)>;
 using RefreshPublisherCallback =
@@ -243,7 +245,9 @@ class RewardsService : public KeyedService {
       const std::map<std::string, std::string>& args,
       GetShareURLCallback callback) = 0;
   virtual void GetMonthlyStatements(
-      int32_t month, uint32_t year) = 0;
+      int32_t month,
+      uint32_t year,
+      GetMonthlyStatementCallback callback) = 0;
 
   virtual void FetchBalance(FetchBalanceCallback callback) = 0;
 

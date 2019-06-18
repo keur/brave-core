@@ -252,7 +252,9 @@ class RewardsServiceImpl : public RewardsService,
 
   void SetPublisherMinVisitTime(uint64_t duration_in_seconds) const override;
   void GetMonthlyStatements(
-      int32_t month, uint32_t year) override;
+      int32_t month,
+      uint32_t year,
+      GetMonthlyStatementCallback callback) override;
 
   void FetchBalance(FetchBalanceCallback callback) override;
 
@@ -587,9 +589,6 @@ class RewardsServiceImpl : public RewardsService,
 
   void OnGetAllTransactions(
       ledger::PublisherInfoListCallback callback,
-      ledger::PublisherInfoList list);
-
-  void OnGetMonthlyStatement(
       ledger::PublisherInfoList list);
 
   bool Connected() const;
