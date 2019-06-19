@@ -76,7 +76,9 @@ using GetRecurringTipsCallback = base::OnceCallback<void(
 using GetOneTimeTipsCallback = base::OnceCallback<void(
     std::unique_ptr<brave_rewards::ContentSiteList>)>;
 using GetMonthlyStatementListCallback = base::OnceCallback<void(
-    std::unique_ptr<MonthlyStatementList>, uint32_t)>;
+    std::unique_ptr<MonthlyStatementList>,
+    std::unique_ptr<BalanceReport>,
+    uint32_t)>;
 using GetPublisherBannerCallback =
     base::OnceCallback<void(std::unique_ptr<brave_rewards::PublisherBanner>)>;
 using RefreshPublisherCallback =

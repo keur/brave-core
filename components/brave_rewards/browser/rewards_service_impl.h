@@ -595,6 +595,7 @@ class RewardsServiceImpl : public RewardsService,
   void OnGetMonthlyStatement(
       GetMonthlyStatementListCallback callback,
       ledger::PublisherInfoList list,
+      ledger::BalanceReportPtr report,
       uint32_t next_record);
 
   bool Connected() const;

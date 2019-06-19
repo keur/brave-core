@@ -18,6 +18,7 @@
 
 using std::placeholders::_1;
 using std::placeholders::_2;
+using std::placeholders::_3;
 
 namespace bat_ledger {
 
@@ -695,9 +696,10 @@ void BatLedgerImpl::FetchBalance(
 void BatLedgerImpl::OnGetAllTransactions(
     CallbackHolder<GetAllTransactionsCallback>* holder,
     ledger::PublisherInfoList list,
+    ledger::BalanceReportPtr report,
     uint32_t num) {
   if (holder->is_valid())
-    std::move(holder->get()).Run(std::move(list), num);
+    std::move(holder->get()).Run(std::move(list), std::move(report), num);
 
   delete holder;
 }
@@ -710,7 +712,7 @@ void BatLedgerImpl::GetAllTransactions(
       AsWeakPtr(), std::move(callback));
 
   ledger_->GetAllTransactions(std::bind(
-      BatLedgerImpl::OnGetAllTransactions, holder, _1, _2),
+      BatLedgerImpl::OnGetAllTransactions, holder, _1, _2, _3),
         ToLedgerPublisherMonth(month), year);
 }
 

@@ -34,6 +34,7 @@ interface State {
   modalActivity: boolean
   modalAddFunds: boolean
   modalPendingContribution: boolean
+  monthlyStatementReport?: Rewards.Report
   //monthlyStatementList: Rewards.MonthlyStatement[]
 }
 
@@ -403,59 +404,73 @@ class PageWallet extends React.Component<Props, State> {
   }
 
   getMonthlyStatementSummary = () => {
+    const { monthlyStatementReport, walletInfo } = this.props.rewardsData
+    if (!monthlyStatementReport) {
+      return []
+    }
     return [
       {
-        text: 'Token Grant available',
-        type: 'grant',
+        text: 'Token grants received',
+        type: 'grant' as any,
         token: {
-          value: '10.0',
-          converted: '5.20'
+          value: utils.convertProbiToFixed(monthlyStatementReport.grant),
+          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.grant), walletInfo.rates)
         }
       },
       {
-        text: 'Earnings from Brave Ads',
-        type: 'ads',
+        text: 'Earnings from ads',
+        type: 'ads' as any,
         token: {
-          value: '10.0',
-          converted: '5.20'
+          value: utils.convertProbiToFixed(monthlyStatementReport.ads),
+          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.ads), walletInfo.rates)
         }
       },
       {
-        text: 'Brave Contribute',
-        type: 'contribute',
-        notPaid: true,
+        text: 'Auto-Contribute',
+        type: 'contribute' as any,
         token: {
-          value: '10.0',
-          converted: '5.20',
+          value: utils.convertProbiToFixed(monthlyStatementReport.contribute),
+          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.contribute), walletInfo.rates),
           isNegative: true
         }
       },
       {
-        text: 'Recurring Tips',
-        type: 'recurring',
-        notPaid: true,
+        text: 'Monthly contributions',
+        type: 'donation' as any,
         token: {
-          value: '2.0',
-          converted: '1.1',
+          value: utils.convertProbiToFixed(monthlyStatementReport.donation),
+          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.donation), walletInfo.rates),
           isNegative: true
         }
       },
       {
-        text: 'One-timen Tips',
-        type: 'donations',
+        text: 'One-time tips',
+        type: 'tips' as any,
         token: {
-          value: '19.0',
-          converted: '10.10',
+          value: utils.convertProbiToFixed(monthlyStatementReport.tips),
+          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.tips), walletInfo.rates),
           isNegative: true
+        }
+      },
+      {
+        text: 'Changes since last month',
+        type: 'total' as any,
+        token: {
+          value: utils.convertProbiToFixed(monthlyStatementReport.total),
+          converted: utils.convertBalance(utils.con)
         }
       }
     ]
   }
 
   getMonthlyStatementTotal = () => {
+    const { monthlyStatementReport, walletInfo } = this.props.rewardsData
+    if (!monthlyStatementReport) {
+      return []
+    }
     return {
-      value: '1.0',
-      converted: '0.5'
+      value: utils.convertProbiToFixed(monthlyStatementReport.total),
+      converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.total), walletInfo.rates)
     }
   }
 
@@ -605,57 +620,8 @@ class PageWallet extends React.Component<Props, State> {
                 'apr-2018': 'April 2018'
               }}
               currentMonth={'aug-2018'}
-              summary={[
-                {
-                  text: 'Token Grant available',
-                  type: 'grant',
-                  token: {
-                    value: '10.0',
-                    converted: '5.20'
-                  }
-                },
-                {
-                  text: 'Earnings from Brave Ads',
-                  type: 'ads',
-                  token: {
-                    value: '10.0',
-                    converted: '5.20'
-                  }
-                },
-                {
-                  text: 'Brave Contribute',
-                  type: 'contribute',
-                  notPaid: true,
-                  token: {
-                    value: '10.0',
-                    converted: '5.20',
-                    isNegative: true
-                  }
-                },
-                {
-                  text: 'Recurring Tips',
-                  type: 'recurring',
-                  notPaid: true,
-                  token: {
-                    value: '2.0',
-                    converted: '1.1',
-                    isNegative: true
-                  }
-                },
-                {
-                  text: 'One-timen Tips',
-                  type: 'donations',
-                  token: {
-                    value: '19.0',
-                    converted: '10.10',
-                    isNegative: true
-                  }
-                }
-              ]}
-              total={{
-                value: '1.0',
-                converted: '0.5'
-              }}
+              summary={this.getMonthlyStatementSummary()}
+              total={this.getMonthlyStatementTotal()}
               paymentDay={12}
               openBalance={{
                 value: '10.0',

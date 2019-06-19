@@ -181,10 +181,11 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
       "ai.percent, pi.excluded, ai.reconcile_stamp "
       "FROM contribution_info as ci "
       "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
-      "LEFT OUTER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "));
+      "LEFT OUTER JOIN activity_info AS ai "
+      "ON ci.publisher_id = ai.publisher_id "));
       // "WHERE ci.month = ? AND ci.year = ?")); // UNCOMMENT DURING CLEANUP
-  // info_sql.BindInt(0, month);
-  // info_sql.BindInt(1, year);
+      // info_sql.BindInt(0, month);
+      // info_sql.BindInt(1, year);
 
   while (info_sql.Step()) {
     auto publisher = ledger::PublisherInfo::New();

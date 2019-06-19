@@ -3331,6 +3331,7 @@ void RewardsServiceImpl::FetchBalance(FetchBalanceCallback callback) {
 void RewardsServiceImpl::OnGetMonthlyStatement(
     GetMonthlyStatementListCallback callback,
     ledger::PublisherInfoList list,
+    ledger::BalanceReportPtr report,
     uint32_t next_record) {
   std::unique_ptr<MonthlyStatementList> statement_list =
       std::make_unique<MonthlyStatementList>();
@@ -3342,8 +3343,18 @@ void RewardsServiceImpl::OnGetMonthlyStatement(
         *contribution));
     }
   }
+  std::unique_ptr<BalanceReport> balance_report =
+      std::make_unique<BalanceReport>();
+  balance_report->opening_balance = report->opening_balance;
+  balance_report->closing_balance = report->closing_balance;
+  balance_report->grants = report->grants;
+  balance_report->earning_from_ads = report->earning_from_ads;
+  balance_report->auto_contribute = report->auto_contribute;
+  balance_report->recurring_donation = report->recurring_donation;
+  balance_report->one_time_donation = report->one_time_donation;
 
-  std::move(callback).Run(std::move(statement_list), next_record);
+  std::move(callback).Run(
+      std::move(statement_list), std::move(balance_report), next_record);
 }
 
 void RewardsServiceImpl::GetMonthlyStatements(

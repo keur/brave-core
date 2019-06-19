@@ -150,7 +150,9 @@ interface BatLedger {
   FetchBalance() => (int32 result, ledger.mojom.Balance balance);
 
   GetAllTransactions(int32 month, uint32 year) =>
-      (array<ledger.mojom.PublisherInfo> list, uint32 next_record);
+      (array<ledger.mojom.PublisherInfo> list,
+      ledger.mojom.BalanceReport report,
+      uint32 next_record);
 };
 
 interface BatLedgerClient {

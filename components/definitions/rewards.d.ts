@@ -58,6 +58,7 @@ declare namespace Rewards {
     grants?: Grant[]
     hasMonthlyStatement: boolean
     monthlyStatementList: MonthlyStatement[]
+    monthlyStatementReport?: Report
     pendingContributions: PendingContribution[]
     pendingContributionTotal: number
     reconcileStamp: number
@@ -88,6 +89,8 @@ declare namespace Rewards {
   }
 
   export type GrantStatus = 'wrongPosition' | 'grantGone' | 'generalError' | 'grantAlreadyClaimed' | number | null
+
+  export type SummaryType = 'deposit' | 'grant' | 'ads' | 'contribute' | 'recurring' | 'donations'
 
   export interface Grant {
     promotionId?: string

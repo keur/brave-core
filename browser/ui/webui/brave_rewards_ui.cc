@@ -217,8 +217,9 @@ class RewardsDOMHandler : public WebUIMessageHandler,
           notifications_list) override;
 
   void OnGetMonthlyStatements(
-    std::unique_ptr<brave_rewards::MonthlyStatementList> list,
-    uint32_t record);
+      std::unique_ptr<brave_rewards::MonthlyStatementList> list,
+      std::unique_ptr<brave_rewards::BalanceReport> balance_report,
+      uint32_t record);
 
   brave_rewards::RewardsService* rewards_service_;  // NOT OWNED
   brave_ads::AdsService* ads_service_;
@@ -1305,31 +1306,42 @@ void RewardsDOMHandler::FetchBalance(const base::ListValue* args) {
 
 void RewardsDOMHandler::OnGetMonthlyStatements(
     std::unique_ptr<brave_rewards::MonthlyStatementList> list,
+    std::unique_ptr<brave_rewards::BalanceReport> balance_report,
     uint32_t record) {
   if (web_ui()->CanCallJavascript()) {
     base::Value statements(base::Value::Type::LIST);
     for (const auto& item : *list) {
       base::Value statement(base::Value::Type::DICTIONARY);
-      statement.SetKey("id", base::Value(item.id));
-      statement.SetKey("publisherKey", base::Value(item.id));
-      statement.SetKey("percentage",
-          base::Value(std::to_string(item.percentage)));
-      statement.SetKey("verified", base::Value(item.verified));
-      statement.SetKey("excluded", base::Value(item.excluded));
-      statement.SetKey("name", base::Value(item.name));
-      statement.SetKey("provider", base::Value(item.provider));
-      statement.SetKey("url", base::Value(item.url));
-      statement.SetKey("favIcon", base::Value(item.favicon_url));
-      statement.SetKey("date", base::Value(std::to_string(item.date)));
-      statement.SetKey("category", base::Value(item.category));
-      statement.SetKey("probi", base::Value(std::to_string(item.probi)));
-      statement.SetKey("reconcile_stamp",
-          base::Value(std::to_string(item.reconcile_stamp)));
+      statement.SetStringKey("id", item.id);
+      statement.SetStringKey("publisherKey", item.id);
+      statement.SetStringKey("percentage", std::to_string(item.percentage));
+      statement.SetBoolKey("verified", item.verified);
+      statement.SetBoolKey("excluded", item.excluded);
+      statement.SetStringKey("name", item.name);
+      statement.SetStringKey("provider", item.provider);
+      statement.SetStringKey("url", item.url);
+      statement.SetStringKey("favIcon", item.favicon_url);
+      statement.SetStringKey("date", std::to_string(item.date));
+      statement.SetIntKey("category", item.category);
+      statement.SetStringKey("probi", std::to_string(item.probi));
+      statement.SetStringKey("reconcile_stamp",
+          std::to_string(item.reconcile_stamp));
       statements.GetList().push_back(std::move(statement));
     }
+    base::Value report(base::Value::Type::DICTIONARY);
+    report.SetStringKey("opening", balance_report->opening_balance);
+    report.SetStringKey("closing", balance_report->closing_balance);
+    report.SetStringKey("grant", balance_report->grants);
+    report.SetStringKey("ads", balance_report->earning_from_ads);
+    report.SetStringKey("contribute", balance_report->auto_contribute);
+    report.SetStringKey("donation",
+    balance_report->recurring_donation);
+    report.SetStringKey("tips", balance_report->one_time_donation);
 
     web_ui()->CallJavascriptFunctionUnsafe(
-         "brave_rewards.onGetMonthlyStatements", statements);
+         "brave_rewards.onGetMonthlyStatements",
+         std::move(statements),
+         std::move(report));
   }
 }
 

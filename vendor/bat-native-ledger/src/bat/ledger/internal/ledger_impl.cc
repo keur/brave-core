@@ -1657,17 +1657,45 @@ void LedgerImpl::FetchBalance(ledger::FetchBalanceCallback callback) {
   bat_wallet_->FetchBalance(callback);
 }
 
+void LedgerImpl::OnGetAllTransactions(
+    ledger::PublisherInfoList list,
+    uint32_t record,
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year,
+    ledger::MonthlyStatementCallback callback) {
+
+  for (uint32_t ix = 0; ix < list.size(); ix++) {
+    list[ix]->verified = bat_publishers_->isVerified(list[ix]->id);
+  }
+
+  ledger::BalanceReportPtr report = ledger::BalanceReport::New();
+  ledger::BalanceReportInfo report_info;
+  if (bat_publishers_->getBalanceReport(month, year, &report_info)) {
+    report->opening_balance = report_info.opening_balance_;
+    report->closing_balance = report_info.closing_balance_;
+    report->grants = report_info.grants_;
+    report->earning_from_ads = report_info.earning_from_ads_;
+    report->auto_contribute = report_info.auto_contribute_;
+    report->recurring_donation = report_info.recurring_donation_;
+    report->one_time_donation = report_info.one_time_donation_;
+  }
+
+  callback(std::move(list), std::move(report), record);
+}
+
 void LedgerImpl::GetAllTransactions(
-    const ledger::PublisherInfoListCallback& callback,
+    const ledger::MonthlyStatementCallback& callback,
     ledger::ACTIVITY_MONTH month,
     uint32_t year) {
   ledger_client_->GetAllTransactions(
       month,
       year,
-      std::bind(&LedgerImpl::ModifyPublisherListVerified,
+      std::bind(&LedgerImpl::OnGetAllTransactions,
                 this,
                 _1,
                 _2,
+                month,
+                year,
                 callback));
 }
 

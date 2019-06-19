@@ -173,9 +173,11 @@ window.cr.define('brave_rewards', function () {
     }
   }
 
-  function onGetMonthlyStatements (monthlyStatement: Rewards.MonthlyStatement[]) {
+  function onGetMonthlyStatements (monthlyStatement: Rewards.MonthlyStatement[], monthlyReport: Rewards.Report) {
     console.log(JSON.stringify(monthlyStatement))
-    getActions().onGetMonthlyStatements(monthlyStatement)
+    console.log('---------------------------')
+    console.log(JSON.stringify(monthlyReport))
+    getActions().onGetMonthlyStatements(monthlyStatement, monthlyReport)
   }
 
   function excludedSiteChanged () {

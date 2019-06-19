@@ -234,6 +234,7 @@ export const getMonthlyStatements = (month: string, year: string) => action(type
   year
 })
 
-export const onGetMonthlyStatements = (statementList: Rewards.MonthlyStatement[]) => action(types.ON_GET_MONTHLY_STATEMENTS, {
-  statementList
+export const onGetMonthlyStatements = (statementList: Rewards.MonthlyStatement[], monthlyReport: Rewards.Report) => action(types.ON_GET_MONTHLY_STATEMENTS, {
+  statementList,
+  monthlyReport
 })

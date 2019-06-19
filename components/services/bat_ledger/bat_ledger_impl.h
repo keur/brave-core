@@ -291,6 +291,7 @@ class BatLedgerImpl : public mojom::BatLedger,
   static void OnGetAllTransactions(
       CallbackHolder<GetAllTransactionsCallback>* holder,
       ledger::PublisherInfoList list,
+      ledger::BalanceReportPtr report,
       uint32_t num);
 
   std::unique_ptr<BatLedgerClientMojoProxy> bat_ledger_client_mojo_proxy_;

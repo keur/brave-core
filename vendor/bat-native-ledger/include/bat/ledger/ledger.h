@@ -50,6 +50,8 @@ using GetAddressesCallback =
 using HasSufficientBalanceToReconcileCallback = std::function<void(bool)>;
 using FetchBalanceCallback = std::function<void(ledger::Result,
                                                 ledger::BalancePtr)>;
+using MonthlyStatementCallback =
+    std::function<void(PublisherInfoList, BalanceReportPtr, uint32_t)>;
 
 class LEDGER_EXPORT Ledger {
  public:
@@ -298,7 +300,7 @@ class LEDGER_EXPORT Ledger {
   virtual void FetchBalance(ledger::FetchBalanceCallback callback) = 0;
 
   virtual void GetAllTransactions(
-      const ledger::PublisherInfoListCallback& callback,
+      const ledger::MonthlyStatementCallback& callback,
       ledger::ACTIVITY_MONTH month,
       uint32_t year) = 0;
 };

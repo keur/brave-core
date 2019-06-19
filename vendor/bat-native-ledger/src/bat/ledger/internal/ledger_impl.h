@@ -490,7 +490,7 @@ class LedgerImpl : public ledger::Ledger,
   void FetchBalance(ledger::FetchBalanceCallback callback) override;
 
   void GetAllTransactions(
-      const ledger::PublisherInfoListCallback& callback,
+      const ledger::MonthlyStatementCallback& callback,
       ledger::ACTIVITY_MONTH month,
       uint32_t year) override;
 
@@ -588,6 +588,13 @@ class LedgerImpl : public ledger::Ledger,
       const std::vector<int32_t>& country_codes,
       int32_t current_country_code,
       ledger::GetAddressesCallback callback);
+
+  void OnGetAllTransactions(
+      ledger::PublisherInfoList list,
+      uint32_t record,
+      ledger::ACTIVITY_MONTH month,
+      uint32_t year,
+      ledger::MonthlyStatementCallback callback);
 
   ledger::LedgerClient* ledger_client_;
   std::unique_ptr<braveledger_grant::Grants> bat_grants_;
