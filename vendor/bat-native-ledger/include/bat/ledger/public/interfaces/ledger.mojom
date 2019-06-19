@@ -82,3 +82,8 @@ struct Balance {
   map<string, double> rates;
   map<string, double> wallets;
 };
+
+struct ExternalWallet {
+  string token;
+  string address;
+};

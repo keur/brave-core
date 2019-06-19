@@ -489,7 +489,7 @@ class LedgerImpl : public ledger::Ledger,
 
   void FetchBalance(ledger::FetchBalanceCallback callback) override;
 
-  void GetWalletTokens(ledger::GetWalletTokensCallback callback);
+  void GetExternalWallets(ledger::GetExternalWalletsCallback callback);
 
  private:
   void AddRecurringPayment(const std::string& publisher_id,
