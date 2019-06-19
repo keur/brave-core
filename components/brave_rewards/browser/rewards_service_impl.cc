@@ -183,6 +183,7 @@ MonthlyStatement PublisherInfoToMonthlyStatement(
   monthly_statement.provider = publisher_info.provider;
   monthly_statement.favicon_url = publisher_info.favicon_url;
   monthly_statement.id = publisher_info.id;
+  monthly_statement.reconcile_stamp = publisher_info.reconcile_stamp;
   monthly_statement.probi = contribution_info.value;
   monthly_statement.category = contribution_info.category;
   monthly_statement.date = contribution_info.date;
@@ -3331,7 +3332,6 @@ void RewardsServiceImpl::OnGetMonthlyStatement(
     GetMonthlyStatementListCallback callback,
     ledger::PublisherInfoList list,
     uint32_t next_record) {
-  LOG(ERROR) << "==========CHECKING PUBLISHER COUNT: " << list.size();
   std::unique_ptr<MonthlyStatementList> statement_list =
       std::make_unique<MonthlyStatementList>();
 

@@ -1322,6 +1322,9 @@ void RewardsDOMHandler::OnGetMonthlyStatements(
       statement.SetKey("favIcon", base::Value(item.favicon_url));
       statement.SetKey("date", base::Value(std::to_string(item.date)));
       statement.SetKey("category", base::Value(item.category));
+      statement.SetKey("probi", base::Value(std::to_string(item.probi)));
+      statement.SetKey("reconcile_stamp",
+          base::Value(std::to_string(item.reconcile_stamp)));
       statements.GetList().push_back(std::move(statement));
     }
 
@@ -1350,60 +1353,6 @@ void RewardsDOMHandler::GetMonthlyStatements(const base::ListValue* args) {
           weak_factory_.GetWeakPtr()));
 }
 
-// void RewardsDOMHandler::OnContentSiteList(
-//     std::unique_ptr<brave_rewards::ContentSiteList> list,
-//     uint32_t record) {
-//   if (web_ui()->CanCallJavascript()) {
-//     auto publishers = std::make_unique<base::ListValue>();
-//     for (auto const& item : *list) {
-//       auto publisher = std::make_unique<base::DictionaryValue>();
-//       publisher->SetString("id", item.id);
-//       publisher->SetDouble("percentage", item.percentage);
-//       publisher->SetString("publisherKey", item.id);
-//       publisher->SetBoolean("verified", item.verified);
-//       publisher->SetInteger("excluded", item.excluded);
-//       publisher->SetString("name", item.name);
-//       publisher->SetString("provider", item.provider);
-//       publisher->SetString("url", item.url);
-//       publisher->SetString("favIcon", item.favicon_url);
-//       publishers->Append(std::move(publisher));
-//     }
-
-//     web_ui()->CallJavascriptFunctionUnsafe(
-//         "brave_rewards.contributeList", *publishers);
-//   }
-// }
-
-// void RewardsDOMHandler::OnGetMonthlyStatements(
-
-
-
-// void RewardsDOMHandler::OnGetRecurringTips(
-//     std::unique_ptr<brave_rewards::ContentSiteList> list) {
-//   if (web_ui()->CanCallJavascript()) {
-//     auto publishers = std::make_unique<base::ListValue>();
-
-//     if (list) {
-//       for (auto const& item : *list) {
-//         auto publisher = std::make_unique<base::DictionaryValue>();
-//         publisher->SetString("id", item.id);
-//         publisher->SetDouble("percentage", item.percentage);
-//         publisher->SetString("publisherKey", item.id);
-//         publisher->SetBoolean("verified", item.verified);
-//         publisher->SetInteger("excluded", item.excluded);
-//         publisher->SetString("name", item.name);
-//         publisher->SetString("provider", item.provider);
-//         publisher->SetString("url", item.url);
-//         publisher->SetString("favIcon", item.favicon_url);
-//         publisher->SetInteger("tipDate", 0);
-//         publishers->Append(std::move(publisher));
-//       }
-//     }
-
-//     web_ui()->CallJavascriptFunctionUnsafe("brave_rewards.recurringTips",
-//                                            *publishers);
-//   }
-// }
 }  // namespace
 
 BraveRewardsUI::BraveRewardsUI(content::WebUI* web_ui, const std::string& name)

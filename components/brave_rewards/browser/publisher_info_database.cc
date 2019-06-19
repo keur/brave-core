@@ -178,7 +178,7 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
   sql::Statement info_sql(db_.GetUniqueStatement(
       "SELECT pi.publisher_id, pi.name, pi.url, pi.verified, pi.favicon, "
       "pi.provider, ci.probi, ci.date, ci.category, "
-      "ai.percent, pi.excluded "
+      "ai.percent, pi.excluded, ai.reconcile_stamp "
       "FROM contribution_info as ci "
       "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
       "LEFT OUTER JOIN activity_info AS ai ON ci.publisher_id = ai.publisher_id "));
@@ -205,6 +205,7 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
     publisher->contributions.push_back(std::move(contribution));
     publisher->percent = info_sql.ColumnInt(9);
     publisher->excluded = info_sql.ColumnBool(10);
+    publisher->reconcile_stamp = info_sql.ColumnInt64(11);
     list->push_back(std::move(publisher));
   }
 }

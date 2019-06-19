@@ -175,7 +175,6 @@ window.cr.define('brave_rewards', function () {
 
   function onGetMonthlyStatements (monthlyStatement: Rewards.MonthlyStatement[]) {
     console.log(JSON.stringify(monthlyStatement))
-    console.log(monthlyStatement)
     getActions().onGetMonthlyStatements(monthlyStatement)
   }
 

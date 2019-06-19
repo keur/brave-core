@@ -34,6 +34,7 @@ interface State {
   modalActivity: boolean
   modalAddFunds: boolean
   modalPendingContribution: boolean
+  //monthlyStatementList: Rewards.MonthlyStatement[]
 }
 
 interface Props extends Rewards.ComponentProps {
@@ -352,7 +353,8 @@ class PageWallet extends React.Component<Props, State> {
   doNothing = () => {}
 
   getMonthlyStatementAutoContribute = (): ContributeRows[] => {
-    //const autoContributeInfo = this.props.rewardsData.
+    // const monthlyStatement = this.props.rewardsData.monthlyStatementList
+
     return [
       {
         profile: {
@@ -562,7 +564,8 @@ class PageWallet extends React.Component<Props, State> {
         {
           this.state.modalActivity
             ? <ModalActivity
-              contributeRows={[
+              contributeRows={//this.getMonthlyStatementAutoContribute()}
+                [
                 {
                   profile: {
                     name: 'Bart Baker',

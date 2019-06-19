@@ -155,6 +155,7 @@ declare namespace Rewards {
     category: number
     date: string
     percentage: string
+    reconcile_stamp: string
   }
 
   export interface ExcludedPublisher {
