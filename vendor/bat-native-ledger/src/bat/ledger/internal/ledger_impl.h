@@ -491,6 +491,8 @@ class LedgerImpl : public ledger::Ledger,
 
   void GetExternalWallets(ledger::GetExternalWalletsCallback callback);
 
+  std::string GetPublisherAddress(const std::string& publisher_key) const;
+
  private:
   void AddRecurringPayment(const std::string& publisher_id,
                            const double& value) override;
