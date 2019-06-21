@@ -624,7 +624,7 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
   report_info->auto_contribute_ = iter->second.auto_contribute_;
   report_info->recurring_donation_ = iter->second.recurring_donation_;
   report_info->one_time_donation_ = iter->second.one_time_donation_;
-
+  report_info->total_ = iter->second.total_;
   return true;
 }
 

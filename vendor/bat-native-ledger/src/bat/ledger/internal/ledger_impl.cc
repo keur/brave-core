@@ -1678,8 +1678,9 @@ void LedgerImpl::OnGetAllTransactions(
     report->auto_contribute = report_info.auto_contribute_;
     report->recurring_donation = report_info.recurring_donation_;
     report->one_time_donation = report_info.one_time_donation_;
+    report->total = report_info.total_;
   }
-
+  LOG(ERROR) << "============REPORT TOTAL: " << report->total;
   callback(std::move(list), std::move(report), record);
 }
 

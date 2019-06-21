@@ -3352,6 +3352,7 @@ void RewardsServiceImpl::OnGetMonthlyStatement(
   balance_report->auto_contribute = report->auto_contribute;
   balance_report->recurring_donation = report->recurring_donation;
   balance_report->one_time_donation = report->one_time_donation;
+  balance_report->total = report->total;
 
   std::move(callback).Run(
       std::move(statement_list), std::move(balance_report), next_record);

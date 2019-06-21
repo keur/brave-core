@@ -1334,9 +1334,9 @@ void RewardsDOMHandler::OnGetMonthlyStatements(
     report.SetStringKey("grant", balance_report->grants);
     report.SetStringKey("ads", balance_report->earning_from_ads);
     report.SetStringKey("contribute", balance_report->auto_contribute);
-    report.SetStringKey("donation",
-    balance_report->recurring_donation);
+    report.SetStringKey("donation", balance_report->recurring_donation);
     report.SetStringKey("tips", balance_report->one_time_donation);
+    report.SetStringKey("total", balance_report->total);
 
     web_ui()->CallJavascriptFunctionUnsafe(
          "brave_rewards.onGetMonthlyStatements",

@@ -404,73 +404,76 @@ class PageWallet extends React.Component<Props, State> {
   }
 
   getMonthlyStatementSummary = () => {
-    const { monthlyStatementReport, walletInfo } = this.props.rewardsData
+    const { monthlyStatementReport, balance } = this.props.rewardsData
     if (!monthlyStatementReport) {
       return []
     }
+    console.log('values')
+    const grantValue = monthlyStatementReport.grant ? utils.convertProbiToFixed(monthlyStatementReport.grant) : '0.0'
+    const adsValue = monthlyStatementReport.ads ? utils.convertProbiToFixed(monthlyStatementReport.ads) : '0.0'
+    const contributeValue = monthlyStatementReport ? utils.convertProbiToFixed(monthlyStatementReport.contribute) : '0.0'
+    const donationValue = monthlyStatementReport ? utils.convertProbiToFixed(monthlyStatementReport.donation) : '0.0'
+    const tipsValue = monthlyStatementReport ? utils.convertProbiToFixed(monthlyStatementReport.tips) : '0.0'
+    console.log('values check')
     return [
       {
         text: 'Token grants received',
         type: 'grant' as any,
         token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.grant),
-          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.grant), walletInfo.rates)
+          value: grantValue,
+          converted: grantValue !== '0.0' ? utils.convertBalance(grantValue, balance.rates) : '0.00'
         }
       },
       {
         text: 'Earnings from ads',
         type: 'ads' as any,
         token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.ads),
-          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.ads), walletInfo.rates)
+          value: adsValue,
+          converted: adsValue !== '0.0' ? utils.convertBalance(adsValue, balance.rates) : '0.00'
         }
       },
       {
         text: 'Auto-Contribute',
         type: 'contribute' as any,
         token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.contribute),
-          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.contribute), walletInfo.rates),
-          isNegative: true
+          value: contributeValue,
+          converted: contributeValue !== '0.0' ? utils.convertBalance(contributeValue, balance.rates) : '0.00',
+          isNegative: contributeValue !== '0.0'
         }
       },
       {
         text: 'Monthly contributions',
         type: 'donation' as any,
         token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.donation),
-          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.donation), walletInfo.rates),
-          isNegative: true
+          value: utils.convertProbiToFixed(donationValue),
+          converted: donationValue !== '0.0' ? utils.convertBalance(utils.convertProbiToFixed(donationValue), balance.rates) : '0.00',
+          isNegative: donationValue !== '0.0'
         }
       },
       {
         text: 'One-time tips',
         type: 'tips' as any,
         token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.tips),
-          converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.tips), walletInfo.rates),
-          isNegative: true
-        }
-      },
-      {
-        text: 'Changes since last month',
-        type: 'total' as any,
-        token: {
-          value: utils.convertProbiToFixed(monthlyStatementReport.total),
-          converted: utils.convertBalance(utils.con)
+          value: utils.convertProbiToFixed(tipsValue),
+          converted: tipsValue !== '0.0' ? utils.convertBalance(tipsValue, balance.rates) : '0.00',
+          isNegative: tipsValue !== '0.0'
         }
       }
     ]
   }
 
   getMonthlyStatementTotal = () => {
-    const { monthlyStatementReport, walletInfo } = this.props.rewardsData
+    const { monthlyStatementReport, balance } = this.props.rewardsData
     if (!monthlyStatementReport) {
-      return []
+      console.log('no monthly statement')
+      return {
+        value: '0',
+        converted: '0'
+      }
     }
     return {
       value: utils.convertProbiToFixed(monthlyStatementReport.total),
-      converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.total), walletInfo.rates)
+      converted: utils.convertBalance(utils.convertProbiToFixed(monthlyStatementReport.total), balance.rates)
     }
   }
 
