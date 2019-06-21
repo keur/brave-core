@@ -43,7 +43,7 @@ class SettingsPage extends React.Component<Props, {}> {
     this.actions.getExcludedSites()
 
     const currentTime = new Date()
-    this.actions.getMonthlyStatements(currentTime.getMonth().toString(), currentTime.getFullYear().toString())
+    this.actions.getMonthlyStatements((currentTime.getMonth() + 1).toString(), currentTime.getFullYear().toString())
   }
 
   componentDidMount () {

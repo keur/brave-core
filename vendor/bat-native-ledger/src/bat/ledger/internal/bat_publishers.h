@@ -210,6 +210,11 @@ class BatPublishers : public ledger::LedgerCallbackHandler {
                          ledger::Result result,
                          ledger::PublisherInfoPtr publisher_info);
 
+  void SetPreviousMonthClosingBalance(
+      ledger::ACTIVITY_MONTH month,
+      int32_t year,
+      ledger::BalanceReportInfo* report_info);
+
   bat_ledger::LedgerImpl* ledger_;  // NOT OWNED
 
   std::unique_ptr<braveledger_bat_helper::PUBLISHER_STATE_ST> state_;

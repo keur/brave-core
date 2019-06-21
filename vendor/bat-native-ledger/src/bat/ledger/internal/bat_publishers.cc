@@ -592,7 +592,7 @@ void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
                                       report_balance.recurring_donation_);
   total = braveledger_bat_bignum::sub(total, report_balance.one_time_donation_);
 
-  report_balance.total_ = total;
+  report_balance.total_ = report_balance.closing_balance_ = total;
   state_->monthly_balances_[GetBalanceReportName(month, year)] = report_balance;
   saveState();
 }
@@ -600,6 +600,7 @@ void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
 bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
                                      int year,
                                      ledger::BalanceReportInfo* report_info) {
+                                       LOG(ERROR) << "========MONTH: " << month;
   std::string name = GetBalanceReportName(month, year);
   auto iter = state_->monthly_balances_.find(name);
   if (!report_info) {
@@ -608,6 +609,13 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
 
   if (iter == state_->monthly_balances_.end()) {
     ledger::BalanceReportInfo new_report_info;
+    SetPreviousMonthClosingBalance(month, year, report_info);
+    SetCurrentMonthOpeningBalance(
+        month,
+        year,
+        new_report_info,
+        report_info->closing_balance_);
+    // Set opening balance
     setBalanceReport(month, year, new_report_info);
     bool successGet = getBalanceReport(month, year, report_info);
     if (successGet) {
@@ -626,6 +634,21 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
   report_info->one_time_donation_ = iter->second.one_time_donation_;
   report_info->total_ = iter->second.total_;
   return true;
+}
+
+void BatPublishers::SetPreviousMonthClosingBalance(
+    ledger::ACTIVITY_MONTH month,
+    int32_t year,
+    ledger::BalanceReportInfo* report_info) {
+  // if iter == monthly statements.end, we either changed month or rewards
+  // was just enabled. if there is a previous month, set the closing balance
+  if (!state_->monthly_balances_.empty()) {
+    if (month == ledger::ACTIVITY_MONTH::JANUARY) {
+      setBalanceReport(ledger::ACTIVITY_MONTH::DECEMBER, year-1, *report_info);
+    } else {
+      setBalanceReport((ledger::ACTIVITY_MONTH)(month - 1), year, *report_info);
+    }
+  }
 }
 
 std::map<std::string, ledger::BalanceReportInfo>
