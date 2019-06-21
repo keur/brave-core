@@ -1,8 +1,12 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2019 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/components/brave_rewards/browser/net/network_delegate_helper.h"
+
+#include <memory>
+#include <string>
 
 #include "base/task/post_task.h"
 #include "brave/components/brave_rewards/browser/rewards_service.h"
@@ -18,6 +22,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace brave_rewards {
@@ -26,6 +31,12 @@ namespace {
 
 bool GetPostData(const net::URLRequest* request, std::string* post_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(iefremov): Make it work by copying post data from request to
+    // BraveRequestInfo in advance.
+    DCHECK(!request);
+    return false;
+  }
   if (!request->has_upload())
     return false;
 
@@ -49,31 +60,6 @@ bool GetPostData(const net::URLRequest* request, std::string* post_data) {
     post_data->append(reader->bytes(), reader->length());
   }
   return true;
-}
-
-void GetRenderFrameInfo(const net::URLRequest* request,
-                        int* render_frame_id,
-                        int* render_process_id,
-                        int* frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  *render_frame_id = -1;
-  *render_process_id = -1;
-  *frame_tree_node_id = -1;
-
-  // PlzNavigate requests have a frame_tree_node_id, but no render_process_id
-  auto* request_info = content::ResourceRequestInfo::ForRequest(request);
-  if (request_info) {
-    *frame_tree_node_id = request_info->GetFrameTreeNodeId();
-  }
-  if (!content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, render_process_id, render_frame_id)) {
-    const content::WebSocketHandshakeRequestInfo* websocket_info =
-      content::WebSocketHandshakeRequestInfo::ForRequest(request);
-    if (websocket_info) {
-      *render_frame_id = websocket_info->GetRenderFrameId();
-      *render_process_id = websocket_info->GetChildId();
-    }
-  }
 }
 
 content::WebContents* GetWebContents(
@@ -129,19 +115,16 @@ int OnBeforeURLRequest(
   std::shared_ptr<brave::BraveRequestInfo> ctx) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (IsMediaLink(ctx->request_url,
-                  ctx->request->site_for_cookies(),
-                  GURL(ctx->request->referrer()))) {
+  if (IsMediaLink(ctx->request_url, ctx->tab_origin, ctx->referrer)) {
     std::string post_data;
     if (GetPostData(ctx->request, &post_data)) {
-      int render_process_id, render_frame_id, frame_tree_node_id;
-      GetRenderFrameInfo(ctx->request, &render_frame_id, &render_process_id,
-          &frame_tree_node_id);
       base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&DispatchOnUI,
               post_data,
-              ctx->request_url, ctx->request->site_for_cookies(), ctx->request->referrer(),
-              render_process_id, render_frame_id, frame_tree_node_id));
+              ctx->request_url, ctx->request->site_for_cookies(),
+              ctx->request->referrer(),
+              ctx->render_process_id, ctx->render_frame_id,
+              ctx->frame_tree_node_id));
     }
   }
 

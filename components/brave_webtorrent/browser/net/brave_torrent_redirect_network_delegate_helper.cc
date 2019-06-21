@@ -20,6 +20,8 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
+
 
 namespace {
 
@@ -121,7 +123,10 @@ int OnHeadersReceived_TorrentRedirectWork(
     GURL* allowed_unsafe_redirect_url,
     const brave::ResponseCallback& next_callback,
     std::shared_ptr<brave::BraveRequestInfo> ctx) {
-
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(iefremov): Make it independent of net::URLRequest.
+    return net::OK;
+  }
   if (!request || !original_response_headers ||
       IsTorProfile(request) ||
       IsWebTorrentDisabled(request) ||
