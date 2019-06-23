@@ -267,6 +267,9 @@ class MockConfirmationsClient : public ConfirmationsClient {
       ledger::Result result,
       const std::string& publisher_key,
       const std::string& publisher_name));
+
+  MOCK_METHOD1(GetExternalWallets, void(
+      GetExternalWalletsCallback callback));
 };
 
 }  // namespace confirmations

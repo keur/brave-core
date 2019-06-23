@@ -86,4 +86,5 @@ struct Balance {
 struct ExternalWallet {
   string token;
   string address;
+  uint32 status;
 };

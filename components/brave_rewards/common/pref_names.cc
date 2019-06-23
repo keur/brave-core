@@ -19,6 +19,7 @@ const char kRewardsBackupSucceeded[] = "brave.rewards.backup_succeeded";
 const char kRewardsUserHasFunded[] = "brave.rewards.user_has_funded";
 const char kRewardsAddFundsNotification[] = "brave.rewards.add_funds_notification";
 const char kRewardsNotificationStartupDelay[] = "brave.rewards.notification_startup_delay";
+const char kRewardsExternalWallets[] = "brave.rewards.external_wallets";
 
 }  // namespace prefs
 }  // namespace brave_rewards
