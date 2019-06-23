@@ -150,3 +150,7 @@ export const init = (tabs: chrome.tabs.Tab[]) => action(types.ON_INIT, {
 export const onBalance = (balance: RewardsExtension.Balance) => action(types.ON_BALANCE, {
   balance
 })
+
+export const onExternalWallet = (wallet: RewardsExtension.ExternalWallet) => action(types.ON_EXTERNAL_WALLET, {
+  wallet
+})

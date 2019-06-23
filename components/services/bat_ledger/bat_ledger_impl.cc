@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <bat/ledger/wallet_properties.h>
 
 #include "base/containers/flat_map.h"
 #include "brave/components/services/bat_ledger/bat_ledger_client_mojo_proxy.h"
@@ -690,6 +691,27 @@ void BatLedgerImpl::FetchBalance(
                 holder,
                 _1,
                 _2));
+}
+
+// static
+void BatLedgerImpl::OnGetExternalWallet(
+    CallbackHolder<GetExternalWalletCallback>* holder,
+    ledger::ExternalWalletPtr wallet) {
+  if (holder->is_valid())
+    std::move(holder->get()).Run(std::move(wallet));
+  delete holder;
+}
+
+void BatLedgerImpl::GetExternalWallet(const std::string& wallet_type,
+                                      GetExternalWalletCallback callback) {
+  auto* holder = new CallbackHolder<GetExternalWalletCallback>(
+      AsWeakPtr(), std::move(callback));
+
+  ledger_->GetExternalWallet(
+      wallet_type,
+      std::bind(BatLedgerImpl::OnGetExternalWallet,
+                holder,
+                _1));
 }
 
 }  // namespace bat_ledger

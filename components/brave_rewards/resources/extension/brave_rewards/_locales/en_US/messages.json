@@ -462,5 +462,69 @@
   "grantFinishTokenTitleAds": {
     "message": "Your Brave Ads Token Grant",
     "description": "Token title on success screen for ads"
+  },
+  "rewardsPanelTextVerify":  {
+    "message": "verify",
+    "description": ""
+  },
+  "walletButtonDisconnected":  {
+    "message": "Disconnected",
+    "description": ""
+  },
+  "walletButtonUnverified":  {
+    "message": "Verify Wallet",
+    "description": ""
+  },
+  "walletButtonVerified":  {
+    "message": "Verified",
+    "description": ""
+  },
+  "walletGoToUphold":  {
+    "message": "Go to my Uphold account",
+    "description": ""
+  },
+  "walletReconnect":  {
+    "message": "Connect to a different wallet",
+    "description": ""
+  },
+  "walletVerificationButton":  {
+    "message": "Verify wallet",
+    "description": ""
+  },
+  "walletVerificationFooter":  {
+    "message": "Our wallet service is provided by",
+    "description": ""
+  },
+  "walletVerificationID":  {
+    "message": "Please have your government issued ID available.",
+    "description": ""
+  },
+  "walletVerificationList1":  {
+    "message": "Withdraw and add funds",
+    "description": ""
+  },
+  "walletVerificationList2":  {
+    "message": "No need to solve captcha to earn ads rewards",
+    "description": ""
+  },
+  "walletVerificationList3":  {
+    "message": "Rewards received will never expire and be deposited to your wallet instantly",
+    "description": ""
+  },
+  "walletVerificationListHeader":  {
+    "message": "A verified wallet allows you to:",
+    "description": ""
+  },
+  "walletVerificationTitle1":  {
+    "message": "Verify Your Wallet",
+    "description": ""
+  },
+  "walletVerificationTitle2":  {
+    "message": "And manage your funds easily!",
+    "description": ""
+  },
+  "walletVerified":  {
+    "message": "Verified",
+    "description": ""
   }
 }
