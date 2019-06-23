@@ -493,6 +493,8 @@ class LedgerImpl : public ledger::Ledger,
 
   std::string GetPublisherAddress(const std::string& publisher_key) const;
 
+  std::string GetCardIdAddress() const;
+
  private:
   void AddRecurringPayment(const std::string& publisher_id,
                            const double& value) override;
