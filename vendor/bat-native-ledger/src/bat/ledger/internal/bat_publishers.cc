@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "bat/ledger/internal/bat_helper.h"
 #include "bat/ledger/internal/bat_publishers.h"
 #include "bat/ledger/internal/bignum.h"
@@ -592,7 +593,8 @@ void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
                                       report_balance.recurring_donation_);
   total = braveledger_bat_bignum::sub(total, report_balance.one_time_donation_);
 
-  report_balance.total_ = report_balance.closing_balance_ = total;
+  // report_balance.total_ = total;
+  // report_balance.closing_balance_ += total;
   state_->monthly_balances_[GetBalanceReportName(month, year)] = report_balance;
   saveState();
 }
@@ -609,14 +611,10 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
 
   if (iter == state_->monthly_balances_.end()) {
     ledger::BalanceReportInfo new_report_info;
-    SetPreviousMonthClosingBalance(month, year, report_info);
-    SetCurrentMonthOpeningBalance(
-        month,
-        year,
-        new_report_info,
-        report_info->closing_balance_);
-    // Set opening balance
     setBalanceReport(month, year, new_report_info);
+    // if (new_report_info.opening_balance_ == "0") {
+    //   // GetOpeningBalance(month, year, report_info);
+    // }
     bool successGet = getBalanceReport(month, year, report_info);
     if (successGet) {
       iter = state_->monthly_balances_.find(name);
@@ -636,19 +634,28 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
   return true;
 }
 
-void BatPublishers::SetPreviousMonthClosingBalance(
+std::string BatPublishers::SetPreviousMonthClosingBalance(
     ledger::ACTIVITY_MONTH month,
     int32_t year,
     ledger::BalanceReportInfo* report_info) {
   // if iter == monthly statements.end, we either changed month or rewards
   // was just enabled. if there is a previous month, set the closing balance
   if (!state_->monthly_balances_.empty()) {
+    double closing_balance;
+    double total;
+    base::StringToDouble(
+        report_info->closing_balance_, &closing_balance);
+    base::StringToDouble(
+        report_info->total_, &total);
+    closing_balance += total;
+    report_info->closing_balance_ = base::NumberToString(closing_balance);
     if (month == ledger::ACTIVITY_MONTH::JANUARY) {
       setBalanceReport(ledger::ACTIVITY_MONTH::DECEMBER, year-1, *report_info);
     } else {
       setBalanceReport((ledger::ACTIVITY_MONTH)(month - 1), year, *report_info);
     }
   }
+  return report_info->closing_balance_;
 }
 
 std::map<std::string, ledger::BalanceReportInfo>
