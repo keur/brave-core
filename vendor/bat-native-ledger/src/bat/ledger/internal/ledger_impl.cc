@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "bat/ads/issuers_info.h"
@@ -1662,8 +1663,9 @@ void LedgerImpl::OnGetAllTransactions(
     uint32_t record,
     ledger::ACTIVITY_MONTH month,
     uint32_t year,
+    double current_balance,
     ledger::MonthlyStatementCallback callback) {
-
+      LOG(ERROR) << "==========CURRENT BALANCE: " << current_balance;
   for (uint32_t ix = 0; ix < list.size(); ix++) {
     list[ix]->verified = bat_publishers_->isVerified(list[ix]->id);
   }
@@ -1671,14 +1673,20 @@ void LedgerImpl::OnGetAllTransactions(
   ledger::BalanceReportPtr report = ledger::BalanceReport::New();
   ledger::BalanceReportInfo report_info;
   if (bat_publishers_->getBalanceReport(month, year, &report_info)) {
-    report->opening_balance = report_info.opening_balance_;
-    report->closing_balance = report_info.closing_balance_;
+    LOG(ERROR) << "BALANCE REPORT TOTAL: " << report_info.total_;
     report->grants = report_info.grants_;
     report->earning_from_ads = report_info.earning_from_ads_;
     report->auto_contribute = report_info.auto_contribute_;
     report->recurring_donation = report_info.recurring_donation_;
     report->one_time_donation = report_info.one_time_donation_;
+    report_info = bat_publishers_->CalculateTotals(
+        report_info,
+        base::NumberToString(current_balance));
+    report->opening_balance = report_info.opening_balance_;
+    report->closing_balance = report_info.closing_balance_;
+    report->deposits = report_info.deposits_;
     report->total = report_info.total_;
+    bat_publishers_->setBalanceReport(month, year, report_info);
   }
   LOG(ERROR) << "============REPORT TOTAL: " << report->total;
   callback(std::move(list), std::move(report), record);
@@ -1688,6 +1696,22 @@ void LedgerImpl::GetAllTransactions(
     const ledger::MonthlyStatementCallback& callback,
     ledger::ACTIVITY_MONTH month,
     uint32_t year) {
+  FetchBalance(std::bind(
+                &LedgerImpl::OnReportBalanceFetched,
+                this,
+                _1,
+                _2,
+                month,
+                year,
+                callback));
+}
+
+void LedgerImpl::OnReportBalanceFetched(
+    ledger::Result result,
+    ledger::BalancePtr balance,
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year,
+    const ledger::MonthlyStatementCallback& callback) {
   ledger_client_->GetAllTransactions(
       month,
       year,
@@ -1697,6 +1721,7 @@ void LedgerImpl::GetAllTransactions(
                 _2,
                 month,
                 year,
+                balance->total,
                 callback));
 }
 

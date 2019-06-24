@@ -574,6 +574,7 @@ void BatPublishers::clearAllBalanceReports() {
 void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
                                 int year,
                                 const ledger::BalanceReportInfo& report_info) {
+                                  LOG(ERROR) << "++++++++++SETTING BALANCE REPORT";
   braveledger_bat_helper::REPORT_BALANCE_ST report_balance;
   report_balance.opening_balance_ = report_info.opening_balance_;
   report_balance.closing_balance_ = report_info.closing_balance_;
@@ -593,7 +594,7 @@ void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
                                       report_balance.recurring_donation_);
   total = braveledger_bat_bignum::sub(total, report_balance.one_time_donation_);
 
-  // report_balance.total_ = total;
+  report_balance.total_ = total;
   // report_balance.closing_balance_ += total;
   state_->monthly_balances_[GetBalanceReportName(month, year)] = report_balance;
   saveState();
@@ -612,9 +613,6 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
   if (iter == state_->monthly_balances_.end()) {
     ledger::BalanceReportInfo new_report_info;
     setBalanceReport(month, year, new_report_info);
-    // if (new_report_info.opening_balance_ == "0") {
-    //   // GetOpeningBalance(month, year, report_info);
-    // }
     bool successGet = getBalanceReport(month, year, report_info);
     if (successGet) {
       iter = state_->monthly_balances_.find(name);
@@ -950,6 +948,28 @@ bool BatPublishers::WasPublisherAlreadyProcessed(
     const std::string& publisher_key) const {
   const std::vector<std::string> list = state_->processed_pending_publishers;
   return std::find(list.begin(), list.end(), publisher_key) != list.end();
+}
+
+ledger::BalanceReportInfo BatPublishers::CalculateTotals(
+    ledger::BalanceReportInfo report_info,
+    const std::string& current_balance) {
+  LOG(ERROR) << "CURRENT BALANCE: " << current_balance;
+  std::string probi_balance =
+      braveledger_bat_helper::ToProbi(current_balance);
+  LOG(ERROR) << "MINUS TOTAL: " << report_info.total_;
+  report_info.deposits_ =
+      braveledger_bat_bignum::sub(probi_balance, report_info.total_);
+  LOG(ERROR) << "DEPOSITS TOTAL CONVERTED: " << report_info.deposits_;
+
+  report_info.total_ =
+      braveledger_bat_bignum::sum(report_info.total_, report_info.deposits_);
+  LOG(ERROR) << "UPDATED REPORT TOTAL: " << report_info.total_;
+  report_info.closing_balance_ = report_info.total_;
+
+  report_info.opening_balance_ =
+      braveledger_bat_bignum::sub(probi_balance, report_info.total_);
+  LOG(ERROR) << "OPEN BALANCE CONVERTED: " << report_info.opening_balance_;
+  return report_info;
 }
 
 }  // namespace braveledger_bat_publishers

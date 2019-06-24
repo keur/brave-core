@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "bat/ledger/internal/bat_helper.h"
+#include "bat/ledger/internal/bignum.h"
 #include "bat/ledger/internal/logging.h"
 #include "bat/ledger/internal/rapidjson_bat_helper.h"
 #include "bat/ledger/internal/static_values.h"
@@ -2609,6 +2610,10 @@ uint8_t niceware_mnemonic_to_bytes(
   *bytes_out = buffer;
   *written = NICEWARE_BYTES_WRITTEN;
   return 0;
+}
+
+std::string ToProbi(const std::string& num) {
+  return braveledger_bat_bignum::mul(num, "1000000000000000000");  // 1e18
 }
 
 void saveToJson(JsonWriter* writer, const ledger::VisitData& visitData) {

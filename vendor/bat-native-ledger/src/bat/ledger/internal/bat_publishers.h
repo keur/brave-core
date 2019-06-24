@@ -132,6 +132,10 @@ class BatPublishers : public ledger::LedgerCallbackHandler {
 
   bool WasPublisherAlreadyProcessed(const std::string& publisher_key) const;
 
+  ledger::BalanceReportInfo CalculateTotals(
+    ledger::BalanceReportInfo report_info,
+    const std::string& current_balance);
+
  private:
   void onPublisherActivitySave(uint64_t windowId,
                                const ledger::VisitData& visit_data,
