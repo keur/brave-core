@@ -381,10 +381,8 @@ class PageWallet extends React.Component<Props, State> {
     return 'aug-2018'
   }
 
-  getMonthlyStatementAutoContribute = (): ContributeRows[] => {
-    const { monthlyStatementList } = this.props.rewardsData
-    // const rates = balance.rates
-    const mon = monthlyStatementList.map((item: Rewards.MonthlyStatement) => {
+  getRows = (rows: Rewards.MonthlyStatement[]): ContributeRows[] => {
+    return rows.map((item: Rewards.MonthlyStatement) => {
       return {
         profile: {
           name: item.name,
@@ -400,6 +398,33 @@ class PageWallet extends React.Component<Props, State> {
         }
       }
     })
+  }
+
+  getMonthlyStatementAutoContribute = (): ContributeRows[] => {
+    const { monthlyStatementList } = this.props.rewardsData
+    // const rates = balance.rates
+    const autoContribute = monthlyStatementList.filter((item: Rewards.MonthlyStatement) => item.category === 2)
+    const mon = this.getRows(autoContribute)
+    console.log('=========MONTHLY DATA: ' + JSON.stringify(monthlyStatementList))
+    console.log('===========AC DATA: ' + JSON.stringify(mon))
+    return mon
+  }
+
+  getMonthlyStatementDonations = (): ContributeRows[] => {
+    const { monthlyStatementList } = this.props.rewardsData
+    // const rates = balance.rates
+    const autoContribute = monthlyStatementList.filter((item: Rewards.MonthlyStatement) => item.category === 16)
+    const mon = this.getRows(autoContribute)
+    console.log('=========MONTHLY DATA: ' + JSON.stringify(monthlyStatementList))
+    console.log('===========AC DATA: ' + JSON.stringify(mon))
+    return mon
+  }
+
+  getMonthlyStatementTips = (): ContributeRows[] => {
+    const { monthlyStatementList } = this.props.rewardsData
+    // const rates = balance.rates
+    const autoContribute = monthlyStatementList.filter((item: Rewards.MonthlyStatement) => item.category === 8)
+    const mon = this.getRows(autoContribute)
     console.log('=========MONTHLY DATA: ' + JSON.stringify(monthlyStatementList))
     console.log('===========AC DATA: ' + JSON.stringify(mon))
     return mon
@@ -618,23 +643,8 @@ class PageWallet extends React.Component<Props, State> {
           this.state.modalActivity
             ? <ModalActivity
               contributeRows={this.getMonthlyStatementAutoContribute()}
-              //   [
-              //   {
-              //     profile: {
-              //       name: 'Bart Baker',
-              //       verified: true,
-              //       provider: 'youtube',
-              //       src: ''
-              //     },
-              //     url: 'https://brave.com',
-              //     attention: 40,
-              //     onRemove: this.doNothing,
-              //     token: {
-              //       value: '5.0',
-              //       converted: '5.00'
-              //     }
-              //   }
-              // ]}
+              donationRows={this.getMonthlyStatementDonations()}
+              tipRows={this.getMonthlyStatementTips()}
               transactionRows={[
                 {
                   date: '6/1',
