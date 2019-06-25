@@ -1312,6 +1312,7 @@ void RewardsDOMHandler::OnGetMonthlyStatements(
     base::Value statements(base::Value::Type::LIST);
     for (const auto& item : *list) {
       base::Value statement(base::Value::Type::DICTIONARY);
+      LOG(ERROR) << "=======PUB KEY: " << item.id;
       statement.SetStringKey("id", item.id);
       statement.SetStringKey("publisherKey", item.id);
       statement.SetStringKey("percentage", std::to_string(item.percentage));

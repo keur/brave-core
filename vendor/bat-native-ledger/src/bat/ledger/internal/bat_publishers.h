@@ -65,7 +65,8 @@ class BatPublishers : public ledger::LedgerCallbackHandler {
 
   void setBalanceReport(ledger::ACTIVITY_MONTH month,
                         int year,
-                        const ledger::BalanceReportInfo& report_info);
+                        const ledger::BalanceReportInfo& report_info,
+                        const std::string& current_balance);
 
   bool getBalanceReport(ledger::ACTIVITY_MONTH month,
                         int year,
@@ -134,7 +135,13 @@ class BatPublishers : public ledger::LedgerCallbackHandler {
 
   ledger::BalanceReportInfo CalculateTotals(
     ledger::BalanceReportInfo report_info,
+    const std::string& previous_month_close_balance,
     const std::string& current_balance);
+
+  bool GetPreviousMonthReport(
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year,
+    ledger::BalanceReportInfo* report_info);
 
  private:
   void onPublisherActivitySave(uint64_t windowId,

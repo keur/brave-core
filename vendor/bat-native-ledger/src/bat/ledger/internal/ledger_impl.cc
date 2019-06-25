@@ -835,7 +835,31 @@ void LedgerImpl::SetBalanceReport(
     ledger::ACTIVITY_MONTH month,
     int year,
     const ledger::BalanceReportInfo& report_info) {
-  bat_publishers_->setBalanceReport(month, year, report_info);
+  // bat_publishers_->setBalanceReport(
+  //     month,
+  //     year,
+  //     report_info,
+  //     braveledger_bat_helper::ToProbi(base::NumberToString(balance->total)));
+FetchBalance(std::bind(&LedgerImpl::SetBalanceReportInternal,
+                      this,
+                      _1,
+                      _2,
+                      month,
+                      year,
+                      report_info));
+}
+
+void LedgerImpl::SetBalanceReportInternal(
+    ledger::Result result,
+    ledger::BalancePtr balance,
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year,
+    const ledger::BalanceReportInfo& report_info) {
+  bat_publishers_->setBalanceReport(
+      month,
+      year,
+      report_info,
+      braveledger_bat_helper::ToProbi(base::NumberToString(balance->total)));
 }
 
 void LedgerImpl::SaveUnverifiedContribution(
@@ -1679,14 +1703,30 @@ void LedgerImpl::OnGetAllTransactions(
     report->auto_contribute = report_info.auto_contribute_;
     report->recurring_donation = report_info.recurring_donation_;
     report->one_time_donation = report_info.one_time_donation_;
-    report_info = bat_publishers_->CalculateTotals(
-        report_info,
-        base::NumberToString(current_balance));
+    // std::string previous_month_closing_balance;
+    // ledger::BalanceReportInfo previous_month_report;
+    // if (bat_publishers_->GetPreviousMonthReport(
+    //     month,
+    //     year,
+    //     &previous_month_report)) {
+    //   previous_month_closing_balance = previous_month_report.closing_balance_;
+    // } else {
+    //   previous_month_closing_balance = "NA";
+    // }
+    // report_info = bat_publishers_->CalculateTotals(
+    //     report_info,
+    //     previous_month_closing_balance,
+    //     base::NumberToString(current_balance));
     report->opening_balance = report_info.opening_balance_;
     report->closing_balance = report_info.closing_balance_;
     report->deposits = report_info.deposits_;
     report->total = report_info.total_;
-    bat_publishers_->setBalanceReport(month, year, report_info);
+    bat_publishers_->setBalanceReport(
+        month,
+        year,
+        report_info,
+        braveledger_bat_helper::ToProbi(
+                      base::NumberToString(current_balance)));
   }
   LOG(ERROR) << "============REPORT TOTAL: " << report->total;
   callback(std::move(list), std::move(report), record);

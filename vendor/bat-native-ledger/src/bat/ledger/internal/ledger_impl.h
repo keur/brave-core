@@ -604,6 +604,13 @@ class LedgerImpl : public ledger::Ledger,
       uint32_t year,
       const ledger::MonthlyStatementCallback& callback);
 
+  void SetBalanceReportInternal(
+      ledger::Result result,
+      ledger::BalancePtr balance,
+      ledger::ACTIVITY_MONTH month,
+      uint32_t year,
+      const ledger::BalanceReportInfo& report_info);
+
   ledger::LedgerClient* ledger_client_;
   std::unique_ptr<braveledger_grant::Grants> bat_grants_;
   std::unique_ptr<braveledger_bat_publishers::BatPublishers> bat_publishers_;

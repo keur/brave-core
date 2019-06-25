@@ -3,6 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <ctime>
@@ -573,8 +575,8 @@ void BatPublishers::clearAllBalanceReports() {
 
 void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
                                 int year,
-                                const ledger::BalanceReportInfo& report_info) {
-                                  LOG(ERROR) << "++++++++++SETTING BALANCE REPORT";
+                                const ledger::BalanceReportInfo& report_info,
+                                const std::string& current_balance) {
   braveledger_bat_helper::REPORT_BALANCE_ST report_balance;
   report_balance.opening_balance_ = report_info.opening_balance_;
   report_balance.closing_balance_ = report_info.closing_balance_;
@@ -593,9 +595,9 @@ void BatPublishers::setBalanceReport(ledger::ACTIVITY_MONTH month,
   total = braveledger_bat_bignum::sub(total,
                                       report_balance.recurring_donation_);
   total = braveledger_bat_bignum::sub(total, report_balance.one_time_donation_);
+   std::string closing_balance = "0";
 
   report_balance.total_ = total;
-  // report_balance.closing_balance_ += total;
   state_->monthly_balances_[GetBalanceReportName(month, year)] = report_balance;
   saveState();
 }
@@ -612,7 +614,7 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
 
   if (iter == state_->monthly_balances_.end()) {
     ledger::BalanceReportInfo new_report_info;
-    setBalanceReport(month, year, new_report_info);
+    setBalanceReport(month, year, new_report_info, "-1");
     bool successGet = getBalanceReport(month, year, report_info);
     if (successGet) {
       iter = state_->monthly_balances_.find(name);
@@ -632,29 +634,29 @@ bool BatPublishers::getBalanceReport(ledger::ACTIVITY_MONTH month,
   return true;
 }
 
-std::string BatPublishers::SetPreviousMonthClosingBalance(
-    ledger::ACTIVITY_MONTH month,
-    int32_t year,
-    ledger::BalanceReportInfo* report_info) {
-  // if iter == monthly statements.end, we either changed month or rewards
-  // was just enabled. if there is a previous month, set the closing balance
-  if (!state_->monthly_balances_.empty()) {
-    double closing_balance;
-    double total;
-    base::StringToDouble(
-        report_info->closing_balance_, &closing_balance);
-    base::StringToDouble(
-        report_info->total_, &total);
-    closing_balance += total;
-    report_info->closing_balance_ = base::NumberToString(closing_balance);
-    if (month == ledger::ACTIVITY_MONTH::JANUARY) {
-      setBalanceReport(ledger::ACTIVITY_MONTH::DECEMBER, year-1, *report_info);
-    } else {
-      setBalanceReport((ledger::ACTIVITY_MONTH)(month - 1), year, *report_info);
-    }
-  }
-  return report_info->closing_balance_;
-}
+// std::string BatPublishers::SetPreviousMonthClosingBalance(
+//     ledger::ACTIVITY_MONTH month,
+//     int32_t year,
+//     ledger::BalanceReportInfo* report_info) {
+//   // if iter == monthly statements.end, we either changed month or rewards
+//   // was just enabled. if there is a previous month, set the closing balance
+//   if (!state_->monthly_balances_.empty()) {
+//     double closing_balance;
+//     double total;
+//     base::StringToDouble(
+//         report_info->closing_balance_, &closing_balance);
+//     base::StringToDouble(
+//         report_info->total_, &total);
+//     closing_balance += total;
+//     report_info->closing_balance_ = base::NumberToString(closing_balance);
+//     if (month == ledger::ACTIVITY_MONTH::JANUARY) {
+//       setBalanceReport(ledger::ACTIVITY_MONTH::DECEMBER, year-1, *report_info);
+//     } else {
+//       setBalanceReport((ledger::ACTIVITY_MONTH)(month - 1), year, *report_info);
+//     }
+//   }
+//   return report_info->closing_balance_;
+// }
 
 std::map<std::string, ledger::BalanceReportInfo>
 BatPublishers::getAllBalanceReports() {
@@ -861,7 +863,7 @@ void BatPublishers::setBalanceReportItem(ledger::ACTIVITY_MONTH month,
       break;
   }
 
-  setBalanceReport(month, year, report_info);
+  setBalanceReport(month, year, report_info, "-1");
 }
 
 void BatPublishers::getPublisherBanner(
@@ -952,24 +954,58 @@ bool BatPublishers::WasPublisherAlreadyProcessed(
 
 ledger::BalanceReportInfo BatPublishers::CalculateTotals(
     ledger::BalanceReportInfo report_info,
+    const std::string& previous_month_close_balance,
     const std::string& current_balance) {
   LOG(ERROR) << "CURRENT BALANCE: " << current_balance;
   std::string probi_balance =
       braveledger_bat_helper::ToProbi(current_balance);
   LOG(ERROR) << "MINUS TOTAL: " << report_info.total_;
+
+
   report_info.deposits_ =
       braveledger_bat_bignum::sub(probi_balance, report_info.total_);
   LOG(ERROR) << "DEPOSITS TOTAL CONVERTED: " << report_info.deposits_;
+  if (previous_month_close_balance != "NA") {
+    report_info.deposits_ =
+        braveledger_bat_bignum::sub(
+          previous_month_close_balance, report_info.deposits_);
+  }
+  LOG(ERROR) << "DEPOSITS TOTAL REMIX: " << report_info.deposits_;
 
   report_info.total_ =
       braveledger_bat_bignum::sum(report_info.total_, report_info.deposits_);
   LOG(ERROR) << "UPDATED REPORT TOTAL: " << report_info.total_;
-  report_info.closing_balance_ = report_info.total_;
+  report_info.closing_balance_ = probi_balance;
 
   report_info.opening_balance_ =
       braveledger_bat_bignum::sub(probi_balance, report_info.total_);
   LOG(ERROR) << "OPEN BALANCE CONVERTED: " << report_info.opening_balance_;
   return report_info;
+}
+
+bool BatPublishers::GetPreviousMonthReport(
+    ledger::ACTIVITY_MONTH month,
+    uint32_t year,
+    ledger::BalanceReportInfo* report_info) {
+  uint32_t previous_report_year = year;
+  int32_t previous_report_month = month;
+  if (month == ledger::ACTIVITY_MONTH::JANUARY) {
+    previous_report_year--;
+    previous_report_month = 12;
+  } else {
+    previous_report_month--;
+  }
+  std::string name = GetBalanceReportName(
+      (ledger::ACTIVITY_MONTH)previous_report_month,
+      previous_report_year);
+  auto iter = state_->monthly_balances_.find(name);
+  if (iter == state_->monthly_balances_.end()) {
+    return false;
+  }
+  return getBalanceReport(
+      (ledger::ACTIVITY_MONTH)previous_report_month,
+      previous_report_year,
+      report_info);
 }
 
 }  // namespace braveledger_bat_publishers

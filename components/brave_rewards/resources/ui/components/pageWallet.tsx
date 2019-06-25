@@ -353,28 +353,6 @@ class PageWallet extends React.Component<Props, State> {
 
   doNothing = () => {}
 
-  getMonthlyStatementAutoContribute = (): ContributeRows[] => {
-    // const monthlyStatement = this.props.rewardsData.monthlyStatementList
-
-    return [
-      {
-        profile: {
-          name: 'Bart Baker',
-          verified: true,
-          provider: 'youtube',
-          src: ''
-        },
-        url: 'https://brave.com',
-        attention: 40,
-        onRemove: this.doNothing,
-        token: {
-          value: '5.0',
-          converted: '5.00'
-        }
-      }
-    ]
-  }
-
   getMonthlyStatementTransaction = () => {
     return [
       {
@@ -402,6 +380,62 @@ class PageWallet extends React.Component<Props, State> {
   getMonthlyStatementSelectedMonth = () => {
     return 'aug-2018'
   }
+
+  getMonthlyStatementAutoContribute = (): ContributeRows[] => {
+    const { monthlyStatementList } = this.props.rewardsData
+    // const rates = balance.rates
+    const mon = monthlyStatementList.map((item: Rewards.MonthlyStatement) => {
+      return {
+        profile: {
+          name: item.name,
+          verified: item.verified,
+          provider: (item.provider ? item.provider : undefined) as Provider,
+          src: item.faviconUrl
+        },
+        url: item.url,
+        attention: parseInt(item.percentage) || 0,
+        token: {
+          value: utils.convertProbiToFixed(item.probi, 1),
+          converted: '0.00'
+        }
+      }
+    })
+    console.log('=========MONTHLY DATA: ' + JSON.stringify(monthlyStatementList))
+    console.log('===========AC DATA: ' + JSON.stringify(mon))
+    return mon
+  }
+
+    // id: string,
+    // verified: boolean
+    // excluded: boolean
+    // name: string
+    // faviconUrl: string
+    // url: string
+    // provider: string
+    // probi: string
+    // category: number
+    // date: string
+    // percentage: string
+    // reconcile_stamp: string
+
+  //   return [
+  //     {
+  //       profile: {
+  //         name: 'Bart Baker',
+  //         verified: true,
+  //         provider: 'youtube',
+  //         src: ''
+  //       },
+  //       url: 'https://brave.com',
+  //       attention: 40,
+  //       onRemove: this.doNothing,
+  //       token: {
+  //         value: '5.0',
+  //         converted: '5.00'
+  //       }
+  //     }
+  //   ]
+  // }
 
   getMonthlyStatementSummary = () => {
     const { monthlyStatementReport, balance } = this.props.rewardsData
@@ -506,6 +540,7 @@ class PageWallet extends React.Component<Props, State> {
       pendingContributionTotal,
       hasMonthlyStatement
     } = this.props.rewardsData
+    console.log(hasMonthlyStatement)
     const { total } = balance
     const { walletRecoverySuccess, emptyWallet, modalBackup } = ui
     const addressArray = utils.getAddresses(addresses)
@@ -540,7 +575,7 @@ class PageWallet extends React.Component<Props, State> {
               : <WalletSummary
                 reservedAmount={pendingTotal}
                 reservedMoreLink={'https://brave.com/faq/#unclaimed-funds'}
-                hasActivity={hasMonthlyStatement}
+                hasActivity={true}
                 onActivity={this.onModalActivityToggle}
                 {...this.getWalletSummary()}
               />
@@ -582,24 +617,24 @@ class PageWallet extends React.Component<Props, State> {
         {
           this.state.modalActivity
             ? <ModalActivity
-              contributeRows={//this.getMonthlyStatementAutoContribute()}
-                [
-                {
-                  profile: {
-                    name: 'Bart Baker',
-                    verified: true,
-                    provider: 'youtube',
-                    src: ''
-                  },
-                  url: 'https://brave.com',
-                  attention: 40,
-                  onRemove: this.doNothing,
-                  token: {
-                    value: '5.0',
-                    converted: '5.00'
-                  }
-                }
-              ]}
+              contributeRows={this.getMonthlyStatementAutoContribute()}
+              //   [
+              //   {
+              //     profile: {
+              //       name: 'Bart Baker',
+              //       verified: true,
+              //       provider: 'youtube',
+              //       src: ''
+              //     },
+              //     url: 'https://brave.com',
+              //     attention: 40,
+              //     onRemove: this.doNothing,
+              //     token: {
+              //       value: '5.0',
+              //       converted: '5.00'
+              //     }
+              //   }
+              // ]}
               transactionRows={[
                 {
                   date: '6/1',
