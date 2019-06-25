@@ -250,9 +250,6 @@ class LEDGER_EXPORT Ledger {
   virtual void HasSufficientBalanceToReconcile(
       HasSufficientBalanceToReconcileCallback callback) = 0;
 
-  virtual void GetAddressesForPaymentId(
-      ledger::WalletAddressesCallback callback) = 0;
-
   virtual void SetCatalogIssuers(const std::string& info) = 0;
 
   virtual void ConfirmAd(const std::string& info) = 0;

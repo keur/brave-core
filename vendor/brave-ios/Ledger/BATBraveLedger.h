@@ -66,9 +66,6 @@ NS_SWIFT_NAME(BraveLedger)
 @property (nonatomic, readonly, nullable) NSString *ETHAddress;
 @property (nonatomic, readonly, nullable) NSString *LTCAddress;
 
-/// ?? Unavailable until we understand whats its for
-- (void)addressesForPaymentId:(void (^)(NSDictionary<NSString *, NSString *> *))completion NS_UNAVAILABLE;
-
 @property (nonatomic, readonly) double balance;
 
 @property (nonatomic, readonly) double defaultContributionAmount;

@@ -308,13 +308,6 @@ BATLedgerReadonlyBridge(BOOL, isWalletCreated, IsWalletCreated)
   return nil;
 }
 
-- (void)addressesForPaymentId:(void (^)(NSDictionary<NSString *,NSString *> * _Nonnull))completion
-{
-  ledger->GetAddressesForPaymentId(^(std::map<std::string, std::string> addresses){
-    completion(NSDictionaryFromMap(addresses));
-  });
-}
-
 - (double)reservedAmount {
   return [BATLedgerDatabase reservedAmountForPendingContributions];
 }

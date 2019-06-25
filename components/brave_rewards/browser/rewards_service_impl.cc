@@ -1497,28 +1497,6 @@ void RewardsServiceImpl::GetReconcileStamp(
   bat_ledger_->GetReconcileStamp(callback);
 }
 
-void RewardsServiceImpl::OnGetAddresses(const GetAddressesCallback& callback,
-    const base::flat_map<std::string, std::string>& addresses) {
-  callback.Run(mojo::FlatMapToMap(addresses));
-}
-
-void RewardsServiceImpl::GetAddresses(const GetAddressesCallback& callback) {
-  if (!Connected()) {
-    return;
-  }
-  int32_t current_country =
-      country_codes::GetCountryIDFromPrefs(profile_->GetPrefs());
-  if (!current_country_for_test_.empty() &&
-      current_country_for_test_.size() > 1) {
-    current_country = country_codes::CountryCharsToCountryID(
-        current_country_for_test_.at(0), current_country_for_test_.at(1));
-  }
-
-  bat_ledger_->GetAddresses(current_country,
-      base::BindOnce(&RewardsServiceImpl::OnGetAddresses,
-              AsWeakPtr(), callback));
-}
-
 void RewardsServiceImpl::SetRewardsMainEnabled(bool enabled) {
   if (!Connected()) {
     return;
@@ -2641,13 +2619,6 @@ void RewardsServiceImpl::HandleFlags(const std::string& options) {
       SetShortRetries(short_retries);
     }
 
-    if (name == "current-country") {
-      const std::string& current_country_(base::ToUpperASCII(value));
-      if (!current_country_.empty() && current_country_.size() == 2) {
-        SetCurrentCountry(current_country_);
-      }
-    }
-
     if (name == "uphold-token") {
       std::string token = base::ToLowerASCII(value);
 
@@ -2771,11 +2742,6 @@ void RewardsServiceImpl::SetReconcileTime(int32_t time) {
 
 void RewardsServiceImpl::SetShortRetries(bool short_retries) {
   bat_ledger_service_->SetShortRetries(short_retries);
-}
-
-void RewardsServiceImpl::SetCurrentCountry(
-    const std::string& current_country) {
-  current_country_for_test_ = current_country;
 }
 
 ledger::Result SavePendingContributionOnFileTaskRunner(
@@ -2914,18 +2880,6 @@ void RewardsServiceImpl::OnPublisherListNormalizedSaved(
   for (auto& observer : observers_) {
     observer.OnPublisherListNormalized(this, site_list);
   }
-}
-
-void RewardsServiceImpl::GetAddressesForPaymentId(
-    const GetAddressesCallback& callback) {
-  if (!Connected()) {
-    return;
-  }
-
-  bat_ledger_->GetAddressesForPaymentId(
-      base::BindOnce(&RewardsServiceImpl::OnGetAddresses,
-                     AsWeakPtr(),
-                     callback));
 }
 
 bool DeleteActivityInfoOnFileTaskRunner(PublisherInfoDatabase* backend,

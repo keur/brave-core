@@ -134,7 +134,6 @@ class RewardsServiceImpl : public RewardsService,
                   const std::string& post_data) override;
   std::string URIEncode(const std::string& value) override;
   void GetReconcileStamp(const GetReconcileStampCallback& callback) override;
-  void GetAddresses(const GetAddressesCallback& callback) override;
   void GetAutoContribute(
       GetAutoContributeCallback callback) override;
   void GetPublisherMinVisitTime(
@@ -194,7 +193,6 @@ class RewardsServiceImpl : public RewardsService,
   void GetReconcileTime(const GetReconcileTimeCallback& callback);
   void SetShortRetries(bool short_retries);
   void GetShortRetries(const GetShortRetriesCallback& callback);
-  void SetCurrentCountry(const std::string& current_country);
 
   void GetAutoContributeProps(
       const GetAutoContributePropsCallback& callback) override;
@@ -202,8 +200,6 @@ class RewardsServiceImpl : public RewardsService,
       const GetPendingContributionsTotalCallback& callback) override;
   void GetRewardsMainEnabled(
       const GetRewardsMainEnabledCallback& callback) const override;
-
-  void GetAddressesForPaymentId(const GetAddressesCallback& callback) override;
 
   void GetOneTimeTipsUI(GetOneTimeTipsCallback callback) override;
   void RefreshPublisher(
@@ -562,9 +558,6 @@ class RewardsServiceImpl : public RewardsService,
       const base::flat_map<std::string, std::string>& json_reports);
   void OnGetCurrentBalanceReport(
       bool success, const std::string& json_report);
-  void OnGetAddresses(
-      const GetAddressesCallback& callback,
-      const base::flat_map<std::string, std::string>& addresses);
   void OnGetAutoContributeProps(
       const GetAutoContributePropsCallback& callback,
       const std::string& json_props);
@@ -629,7 +622,6 @@ class RewardsServiceImpl : public RewardsService,
   uint32_t next_timer_id_;
 
   GetTestResponseCallback test_response_callback_;
-  std::string current_country_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(RewardsServiceImpl);
 };

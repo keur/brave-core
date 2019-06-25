@@ -425,9 +425,6 @@ class LedgerImpl : public ledger::Ledger,
   void SaveNormalizedPublisherList(
       ledger::PublisherInfoList normalized_list);
 
-  void
-  GetAddressesForPaymentId(ledger::WalletAddressesCallback callback) override;
-
   void SetAddresses(std::map<std::string, std::string> addresses);
 
   void SetCatalogIssuers(const std::string& info) override;
