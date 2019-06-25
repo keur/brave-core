@@ -1,0 +1,14 @@
+diff --git a/components/sync/syncable/write_transaction.cc b/components/sync/syncable/write_transaction.cc
+index 00b248a93830bbafae831d46d1089a0844c57805..25e5d6cbd9a4b5274a423584e7678cdc28d6c873 100644
+--- a/components/sync/syncable/write_transaction.cc
++++ b/components/sync/syncable/write_transaction.cc
+@@ -28,7 +28,8 @@ WriteTransaction::WriteTransaction(const base::Location& from_here,
+ }
+ 
+ WriteTransaction::~WriteTransaction() {
+-  delete transaction_;
++  if (!keep_)
++    delete transaction_;
+ }
+ 
+ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
