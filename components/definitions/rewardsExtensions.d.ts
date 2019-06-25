@@ -171,5 +171,7 @@ declare namespace RewardsExtension {
     status: WalletStatus
     type: WalletType
     verifyUrl: string
+    addUrl: string
+    withdrawUrl: string
   }
 }

@@ -215,13 +215,32 @@ export class Panel extends React.Component<Props, State> {
     }
   }
 
-  openRewardsAddFundsPage (notificationId?: string) {
-    chrome.tabs.create({
-      url: 'chrome://rewards/#add-funds'
-    })
+  onAddFunds = (notificationId?: string) => {
+    const status = this.getWalletStatus()
+    const { externalWallet } = this.props.rewardsPanelData
 
     if (notificationId) {
       this.actions.deleteNotification(notificationId)
+    }
+
+    if (!externalWallet) {
+      return
+    }
+
+    if (status === 'verified') {
+      if (externalWallet.addUrl) {
+        chrome.tabs.create({
+          url: externalWallet.addUrl
+        })
+      }
+      return
+    }
+
+    if (externalWallet.verifyUrl) {
+      chrome.tabs.create({
+        url: externalWallet.verifyUrl
+      })
+      return
     }
   }
 
@@ -277,7 +296,7 @@ export class Panel extends React.Component<Props, State> {
         clickEvent = this.openRewardsPage.bind(this, id)
         break
       case 'insufficientFunds':
-        clickEvent = this.openRewardsAddFundsPage.bind(this, id)
+        clickEvent = this.onAddFunds.bind(this, id)
         break
       default:
         clickEvent = undefined
@@ -592,7 +611,7 @@ export class Panel extends React.Component<Props, State> {
         actions={[
           {
             name: getMessage('addFunds'),
-            action: this.openRewardsAddFundsPage,
+            action: this.onAddFunds,
             icon: <WalletAddIcon />
           },
           {

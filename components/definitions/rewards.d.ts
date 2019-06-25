@@ -223,5 +223,7 @@ declare namespace Rewards {
     status: WalletStatus
     type: WalletType
     verifyUrl: string
+    addUrl: string
+    withdrawUrl: string
   }
 }
