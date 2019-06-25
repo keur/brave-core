@@ -22,6 +22,7 @@ namespace network {
 struct ResourceRequest;
 }
 class BraveNetworkDelegateBase;
+class BraveShieldsCore;
 
 namespace brave {
 
@@ -116,6 +117,7 @@ struct BraveRequestInfo {
       const ResponseCallback& next_callback,
       std::shared_ptr<BraveRequestInfo> ctx);
   friend class ::BraveNetworkDelegateBase;
+  friend class ::BraveShieldsCore;
 
   // Don't use this directly after any dispatch
   // request is deprecated, do not use it.
