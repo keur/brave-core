@@ -30,7 +30,9 @@
 #include "bat/ledger/internal/media/helper.h"
 #include "bat/ledger/internal/rapidjson_bat_helper.h"
 #include "bat/ledger/internal/static_values.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "net/http/http_status_code.h"
+
 
 using namespace braveledger_grant; //  NOLINT
 using namespace braveledger_bat_publishers; //  NOLINT
@@ -1764,13 +1766,19 @@ void LedgerImpl::OnReportBalanceFetched(
       base::Time::Exploded exploded;
       base::Time::FromJsTime(
           submission_stamp).LocalExplode(&exploded);
-      LOG(ERROR) << "=========SUBMISSION STAMP: " << exploded.month;
       if (exploded.month == month) {
         for (size_t b_ix = 0; b_ix < tx.ballots_.size(); b_ix++) {
-          std::string product(
-              base::NumberToString(tx.ballots_[b_ix].offset_ / tx.votes_));
+          double product(
+              (double)tx.ballots_[b_ix].offset_ / (double)tx.votes_);
+          double contribution_amount;
+          base::StringToDouble(
+              tx.contribution_fiat_amount_, &contribution_amount);
+          double portion = product * contribution_amount;
+          std::string converted_portion =
+              base::NumberToString(portion * 10); // bring tenths for probi
+
           std::string ac_single_amount =
-              braveledger_bat_bignum::mul(product, tx.contribution_probi_);
+              braveledger_bat_helper::ToProbi(converted_portion, 1);
           publisher_ac_txs.insert(
               std::make_pair(tx.ballots_[b_ix].publisher_, ac_single_amount));
         }
@@ -1778,7 +1786,7 @@ void LedgerImpl::OnReportBalanceFetched(
     }
   }
   ledger_client_->GetAllTransactions(
-      publisher_ac_txs,
+      mojo::MapToFlatMap(publisher_ac_txs),
       month,
       year,
       std::bind(&LedgerImpl::OnGetAllTransactions,

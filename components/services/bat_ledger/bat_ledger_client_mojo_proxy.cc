@@ -810,7 +810,7 @@ void OnGetAllTransactions(const ledger::PublisherInfoListCallback& callback,
 }
 
 void BatLedgerClientMojoProxy::GetAllTransactions(
-    std::map<std::string, std::string> publisher_ac_txs,
+    const base::flat_map<std::string, std::string>& publisher_ac_txs,
     int32_t month,
     uint32_t year,
     ledger::PublisherInfoListCallback callback) {

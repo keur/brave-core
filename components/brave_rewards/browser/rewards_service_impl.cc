@@ -2388,6 +2388,7 @@ ledger::PublisherInfoList GetOneTimeTipsOnFileTaskRunner(
 
 ledger::PublisherInfoList GetAllTransactionsOnFileTaskRunner(
     PublisherInfoDatabase* backend,
+    const base::flat_map<std::string, std::string>& publisher_ac_txs,
     int32_t month,
     uint32_t year) {
   ledger::PublisherInfoList list;
@@ -2396,6 +2397,7 @@ ledger::PublisherInfoList GetAllTransactionsOnFileTaskRunner(
   }
 
   backend->GetAllTransactions(&list, month, year);
+  backend->GetPublishersByKeys(&list, publisher_ac_txs);
   return list;
 }
 
@@ -2410,14 +2412,14 @@ void RewardsServiceImpl::GetOneTimeTips(
 }
 
 void RewardsServiceImpl::GetAllTransactions(
-    std::map<std::string, std::string> publisher_ac_txs,
+    const base::flat_map<std::string, std::string>& publisher_ac_txs,
     int32_t month,
     uint32_t year,
     ledger::PublisherInfoListCallback callback) {
   base::PostTaskAndReplyWithResult(file_task_runner_.get(), FROM_HERE,
       base::Bind(&GetAllTransactionsOnFileTaskRunner,
                   publisher_info_backend_.get(),
-                  month, year),
+                  publisher_ac_txs, month, year),
       base::Bind(&RewardsServiceImpl::OnGetAllTransactions,
                   AsWeakPtr(),
                   callback));

@@ -105,7 +105,7 @@ class PublisherInfoDatabase {
 
   bool GetPublishersByKeys(
       ledger::PublisherInfoList* list,
-      std::vector<std::string> keys);
+      const base::flat_map<std::string, std::string>& keys);
 
   // Vacuums the database. This will cause sqlite to defragment and collect
   // unused space in the file. It can be VERY SLOW.

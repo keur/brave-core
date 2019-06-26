@@ -538,6 +538,8 @@ std::vector<std::string> split(const std::string& s, char delim);
 
 std::string ToProbi(const std::string& s);
 
+std::string ToProbi(const std::string& s, uint32_t offset);
+
 bool ignore_for_testing();
 
 void set_ignore_for_testing(bool ignore);

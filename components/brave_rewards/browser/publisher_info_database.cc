@@ -165,7 +165,7 @@ bool PublisherInfoDatabase::InsertContributionInfo(
 
 bool PublisherInfoDatabase::GetPublishersByKeys(
     ledger::PublisherInfoList* list,
-    std::vector<std::string> keys) {
+    const base::flat_map<std::string, std::string>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool initialized = Init();
@@ -177,12 +177,9 @@ bool PublisherInfoDatabase::GetPublishersByKeys(
 
   std::string query =
       "SELECT pi.publisher_id, pi.name, pi.url, pi.verified, pi.favicon, "
-      "pi.provider, ci.probi, ci.date, ci.category, "
-      "ai.percent, pi.excluded, ai.reconcile_stamp "
-      "FROM contribution_info as ci "
-      "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
-      "LEFT OUTER JOIN activity_info AS ai "
-      "ON ci.publisher_id = ai.publisher_id "
+      "pi.provider, pi.excluded "
+      "FROM publisher_info AS pi "
+      "INNER JOIN activity_info AS ai ON ai.publisher_id = pi.publisher_id "
       "WHERE 1 = 1 ";
 
   if (!keys.empty()) {
@@ -196,14 +193,19 @@ bool PublisherInfoDatabase::GetPublishersByKeys(
   }
 
   sql::Statement info_sql(db_.GetUniqueStatement(query.c_str()));
-
+  uint32_t column = 0;
   if (!keys.empty()) {
-    for (size_t column = 0; column < keys.size(); column++) {
-      if (!keys[column].empty()) {
-        info_sql.BindString(column+1, keys[column]);
+    for (const auto& key : keys) {
+      if (!key.first.empty()) {
+        DCHECK(column < keys.size());
+        info_sql.BindString(column++, key.first);
+        LOG(ERROR) << "=====SQL ARG: " << key.first;
+        LOG(ERROR) << "======AMOUNT: " << key.second;
       }
     }
   }
+  LOG(ERROR) << "========MAP COUNT: " << keys.size();
+  LOG(ERROR) << "========SQL QUERY: \n" << query;
 
   while (info_sql.Step()) {
     auto info = ledger::PublisherInfo::New();
@@ -221,10 +223,13 @@ bool PublisherInfoDatabase::GetPublishersByKeys(
     info->favicon_url = info_sql.ColumnString(10);
     info->reconcile_stamp = info_sql.ColumnInt64(11);
     info->visits = info_sql.ColumnInt(12);
-
+    auto contribution = ledger::mojom::ContributionInfo::New();
+    contribution->category = 2;
+    auto pub_pair = keys.find(info->id);
+    base::StringToDouble(pub_pair->second, &contribution->value);
     list->push_back(std::move(info));
   }
-
+  LOG(ERROR) << "=======LIST SIZE: " << list->size();
   return true;
 }
 
@@ -242,12 +247,9 @@ void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
 
   sql::Statement info_sql(db_.GetUniqueStatement(
       "SELECT pi.publisher_id, pi.name, pi.url, pi.verified, pi.favicon, "
-      "pi.provider, ci.probi, ci.date, ci.category, "
-      "ai.percent, pi.excluded, ai.reconcile_stamp "
+      "pi.provider, ci.probi, ci.date, ci.category "
       "FROM contribution_info as ci "
-      "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
-      "LEFT OUTER JOIN activity_info AS ai "
-      "ON ci.publisher_id = ai.publisher_id "));
+      "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "));
       // "WHERE ci.month = ? AND ci.year = ?")); // UNCOMMENT DURING CLEANUP
       // info_sql.BindInt(0, month);
       // info_sql.BindInt(1, year);

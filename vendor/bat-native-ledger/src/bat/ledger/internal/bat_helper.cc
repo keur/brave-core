@@ -2616,6 +2616,14 @@ std::string ToProbi(const std::string& num) {
   return braveledger_bat_bignum::mul(num, "1000000000000000000");  // 1e18
 }
 
+std::string ToProbi(const std::string& num, uint32_t digit_offset) {
+  std::string e18("1000000000000000000");
+  for (uint32_t ix = 0; ix < digit_offset; ix++) {
+    e18.pop_back();
+  }
+  return braveledger_bat_bignum::mul(num, e18);
+}
+
 void saveToJson(JsonWriter* writer, const ledger::VisitData& visitData) {
   writer->StartObject();
 
