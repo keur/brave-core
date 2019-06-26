@@ -16,9 +16,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
+#include "base/time/time.h"
 #include "bat/ads/issuers_info.h"
 #include "bat/ads/notification_info.h"
 #include "bat/confirmations/confirmations.h"
+#include "bat/ledger/internal/bignum.h"
 #include "bat/ledger/internal/media/media.h"
 #include "bat/ledger/internal/bat_helper.h"
 #include "bat/ledger/internal/bat_publishers.h"
@@ -1689,7 +1691,8 @@ void LedgerImpl::OnGetAllTransactions(
     uint32_t year,
     double current_balance,
     ledger::MonthlyStatementCallback callback) {
-      LOG(ERROR) << "==========CURRENT BALANCE: " << current_balance;
+  LOG(ERROR) << "==========CURRENT BALANCE: " << current_balance;
+
   for (uint32_t ix = 0; ix < list.size(); ix++) {
     list[ix]->verified = bat_publishers_->isVerified(list[ix]->id);
   }
@@ -1752,7 +1755,30 @@ void LedgerImpl::OnReportBalanceFetched(
     ledger::ACTIVITY_MONTH month,
     uint32_t year,
     const ledger::MonthlyStatementCallback& callback) {
+  braveledger_bat_helper::Transactions txns = bat_state_->GetTransactions();
+  std::map<std::string, std::string> publisher_ac_txs;
+  for (const auto& tx : txns) {
+    if (tx.submissionStamp_ != "0") {
+      double submission_stamp;
+      base::StringToDouble(tx.submissionStamp_, &submission_stamp);
+      base::Time::Exploded exploded;
+      base::Time::FromJsTime(
+          submission_stamp).LocalExplode(&exploded);
+      LOG(ERROR) << "=========SUBMISSION STAMP: " << exploded.month;
+      if (exploded.month == month) {
+        for (size_t b_ix = 0; b_ix < tx.ballots_.size(); b_ix++) {
+          std::string product(
+              base::NumberToString(tx.ballots_[b_ix].offset_ / tx.votes_));
+          std::string ac_single_amount =
+              braveledger_bat_bignum::mul(product, tx.contribution_probi_);
+          publisher_ac_txs.insert(
+              std::make_pair(tx.ballots_[b_ix].publisher_, ac_single_amount));
+        }
+      }
+    }
+  }
   ledger_client_->GetAllTransactions(
+      publisher_ac_txs,
       month,
       year,
       std::bind(&LedgerImpl::OnGetAllTransactions,
@@ -1764,5 +1790,26 @@ void LedgerImpl::OnReportBalanceFetched(
                 balance->total,
                 callback));
 }
+
+// void LedgerImpl::OnGetPublishersByKeys(
+//     ledger::Result result,
+//     ledger::PublisherInfoList ac_list,
+//     ledger::ACTIVITY_MONTH month,
+//     uint32_t year,
+//     double current_balance,
+//     const ledger::MonthlyStatementCallback& callback) {
+//   ledger_client_->GetAllTransactions(
+//       month,
+//       year,
+//       std::bind(&LedgerImpl::OnGetAllTransactions,
+//                 this,
+//                 _1,
+//                 _2,
+//                 ac_list,
+//                 month,
+//                 year,
+//                 balance->total,
+//                 callback));
+// }
 
 }  // namespace bat_ledger

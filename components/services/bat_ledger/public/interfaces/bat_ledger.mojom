@@ -252,7 +252,9 @@ interface BatLedgerClient {
   OnContributeUnverifiedPublishers(int32 result, string publisher_key,
       string publisher_name);
 
-  GetAllTransactions(int32 month, uint32 year) => (
+  GetAllTransactions(
+      map<string, string> publisher_ac_txs,
+      int32 month, uint32 year) => (
       array<ledger.mojom.PublisherInfo> publisher_info_list,
       uint32 next_record);
 };

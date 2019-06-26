@@ -247,6 +247,7 @@ class LEDGER_EXPORT LedgerClient {
       const std::string& publisher_name) = 0;
 
   virtual void GetAllTransactions(
+      std::map<std::string, std::string> publisher_ac_txs,
       int32_t month,
       uint32_t year,
       ledger::PublisherInfoListCallback callback) = 0;

@@ -584,6 +584,7 @@ class RewardsServiceImpl : public RewardsService,
       const std::string& publisher_name) override;
 
   void GetAllTransactions(
+      std::map<std::string, std::string> publisher_ac_txs,
       int32_t month,
       uint32_t year,
       ledger::PublisherInfoListCallback callback) override;

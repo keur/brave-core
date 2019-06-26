@@ -775,6 +775,7 @@ void LedgerClientMojoProxy::OnGetAllTransactions(
 }
 
 void LedgerClientMojoProxy::GetAllTransactions(
+    std::map<std::string, std::string> publisher_ac_txs,
     int32_t month,
     uint32_t year,
     GetAllTransactionsCallback callback) {
@@ -782,6 +783,7 @@ void LedgerClientMojoProxy::GetAllTransactions(
   auto* holder = new CallbackHolder<GetAllTransactionsCallback>(
       AsWeakPtr(), std::move(callback));
   ledger_client_->GetAllTransactions(
+      publisher_ac_txs,
       month,
       year,
       std::bind(LedgerClientMojoProxy::OnGetAllTransactions,

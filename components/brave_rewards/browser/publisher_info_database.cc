@@ -163,6 +163,71 @@ bool PublisherInfoDatabase::InsertContributionInfo(
   return statement.Run();
 }
 
+bool PublisherInfoDatabase::GetPublishersByKeys(
+    ledger::PublisherInfoList* list,
+    std::vector<std::string> keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  bool initialized = Init();
+  DCHECK(initialized);
+
+  if(!initialized) {
+    return false;
+  }
+
+  std::string query =
+      "SELECT pi.publisher_id, pi.name, pi.url, pi.verified, pi.favicon, "
+      "pi.provider, ci.probi, ci.date, ci.category, "
+      "ai.percent, pi.excluded, ai.reconcile_stamp "
+      "FROM contribution_info as ci "
+      "INNER JOIN publisher_info AS pi ON ci.publisher_id = pi.publisher_id "
+      "LEFT OUTER JOIN activity_info AS ai "
+      "ON ci.publisher_id = ai.publisher_id "
+      "WHERE 1 = 1 ";
+
+  if (!keys.empty()) {
+    query += " AND ";
+    for (size_t ix = 0; ix < keys.size(); ix++) {
+      query += " pi.publisher_id = ? ";
+      if (ix != keys.size() - 1) {
+        query += " OR ";
+      }
+    }
+  }
+
+  sql::Statement info_sql(db_.GetUniqueStatement(query.c_str()));
+
+  if (!keys.empty()) {
+    for (size_t column = 0; column < keys.size(); column++) {
+      if (!keys[column].empty()) {
+        info_sql.BindString(column+1, keys[column]);
+      }
+    }
+  }
+
+  while (info_sql.Step()) {
+    auto info = ledger::PublisherInfo::New();
+    info->id = info_sql.ColumnString(0);
+    info->duration = info_sql.ColumnInt64(1);
+    info->score = info_sql.ColumnDouble(2);
+    info->percent = info_sql.ColumnInt64(3);
+    info->weight = info_sql.ColumnDouble(4);
+    info->verified = info_sql.ColumnBool(5);
+    info->excluded = static_cast<ledger::PUBLISHER_EXCLUDE>(
+        info_sql.ColumnInt(6));
+    info->name = info_sql.ColumnString(7);
+    info->url = info_sql.ColumnString(8);
+    info->provider = info_sql.ColumnString(9);
+    info->favicon_url = info_sql.ColumnString(10);
+    info->reconcile_stamp = info_sql.ColumnInt64(11);
+    info->visits = info_sql.ColumnInt(12);
+
+    list->push_back(std::move(info));
+  }
+
+  return true;
+}
+
 void PublisherInfoDatabase::GetAllTransactions(ledger::PublisherInfoList* list,
                                                int32_t month,
                                                uint32_t year) {

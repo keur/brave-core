@@ -810,6 +810,7 @@ void OnGetAllTransactions(const ledger::PublisherInfoListCallback& callback,
 }
 
 void BatLedgerClientMojoProxy::GetAllTransactions(
+    std::map<std::string, std::string> publisher_ac_txs,
     int32_t month,
     uint32_t year,
     ledger::PublisherInfoListCallback callback) {
@@ -819,6 +820,7 @@ void BatLedgerClientMojoProxy::GetAllTransactions(
   }
 
   bat_ledger_client_->GetAllTransactions(
+      publisher_ac_txs,
       month,
       year,
       base::BindOnce(&OnGetAllTransactions, std::move(callback)));

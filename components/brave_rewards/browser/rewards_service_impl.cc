@@ -2410,6 +2410,7 @@ void RewardsServiceImpl::GetOneTimeTips(
 }
 
 void RewardsServiceImpl::GetAllTransactions(
+    std::map<std::string, std::string> publisher_ac_txs,
     int32_t month,
     uint32_t year,
     ledger::PublisherInfoListCallback callback) {
