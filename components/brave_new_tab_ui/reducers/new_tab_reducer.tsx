@@ -27,12 +27,8 @@ export const newTabReducer: Reducer<NewTab.State | undefined> = (state: NewTab.S
   const startingState = state
   const payload = action.payload
   switch (action.type) {
-    case types.NEW_TAB_SHOW_SETTINGS_MENU:
-      state = { ...state, showSettings: true }
-      break
-
-    case types.NEW_TAB_CLOSE_SETTINGS_MENU:
-      state = { ...state, showSettings: false }
+    case types.NEW_TAB_TOGGLE_SETTINGS_MENU:
+      state = { ...state, showSettings: !state.showSettings }
       break
 
     case types.BOOKMARK_ADDED:

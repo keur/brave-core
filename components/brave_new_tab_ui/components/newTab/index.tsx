@@ -77,6 +77,10 @@ class NewTabPage extends React.Component<Props, {}> {
     this.props.actions.closeSettingsMenu()
   }
 
+  toggleSettings = () => {
+    this.props.actions.toggleSettingsMenu()
+  }
+
   render () {
     const { newTabData, actions } = this.props
 
@@ -123,7 +127,7 @@ class NewTabPage extends React.Component<Props, {}> {
           {
             newTabData.showSettings &&
             <Settings
-              onClickOutside={this.closeSettings}
+              onClickOutside={this.toggleSettings}
               toggleShowBackgroundImage={this.toggleShowBackgroundImage}
               showBackgroundImage={newTabData.showBackgroundImage}
             />
@@ -131,7 +135,7 @@ class NewTabPage extends React.Component<Props, {}> {
           <Footer>
             <FooterInfo
               backgroundImageInfo={newTabData.backgroundImage}
-              onClickSettings={this.showSettings}
+              onClickSettings={this.toggleSettings}
               isSettingsMenuOpen={newTabData.showSettings}
               showPhotoInfo={newTabData.showBackgroundImage}
             />

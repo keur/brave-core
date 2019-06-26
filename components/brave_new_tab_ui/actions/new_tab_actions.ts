@@ -68,9 +68,7 @@ export const changePrivateSearchEngine = (shouldUse: boolean) => action(types.NE
   shouldUse
 })
 
-export const showSettingsMenu = () => action(types.NEW_TAB_SHOW_SETTINGS_MENU)
-
-export const closeSettingsMenu = () => action(types.NEW_TAB_CLOSE_SETTINGS_MENU)
+export const toggleSettingsMenu = () => action(types.NEW_TAB_TOGGLE_SETTINGS_MENU)
 
 export const preferencesUpdated = (preferences: Preferences) => action(types.NEW_TAB_PREFERENCES_UPDATED, {
   preferences
