@@ -218,3 +218,12 @@ export const getExternalWallet = (type: Rewards.WalletType) => action(types.GET_
 export const onExternalWallet = (wallet: Rewards.ExternalWallet) => action(types.ON_EXTERNAL_WALLET, {
   wallet
 })
+
+export const processRewardsPageUrl = (path: string, query: string) => action(types.PROCESS_REWARDS_PAGE_URL, {
+  path,
+  query
+})
+
+export const onProcessRewardsPageUrl = (data: Rewards.ProcessRewardsPageUrl) => action(types.ON_PROCESS_REWARDS_PAGE_URL, {
+  data
+})

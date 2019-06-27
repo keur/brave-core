@@ -348,11 +348,10 @@ class PageWallet extends React.Component<Props, State> {
     }
 
     switch (externalWallet.status) {
-      case 0:
-        return 'unverified'
-      case 1:
-        return 'verified'
       case 2:
+        return 'verified'
+      case 3:
+      case 4:
         return 'disconnected'
       default:
         return 'unverified'

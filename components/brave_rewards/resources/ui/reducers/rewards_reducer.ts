@@ -209,6 +209,49 @@ const rewardsReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State
 
       break
     }
+    case types.PROCESS_REWARDS_PAGE_URL: {
+      const path = action.payload.path
+      const query = action.payload.query
+      const ui = state.ui
+
+      chrome.send('brave_rewards.processRewardsPageUrl', [path, query])
+      ui.modalProgress = true
+
+      state = {
+        ...state,
+        ui
+      }
+      break
+    }
+    case types.ON_PROCESS_REWARDS_PAGE_URL: {
+      const data = action.payload.data
+      const ui = state.ui
+
+      ui.modalProgress = false
+
+      if (data.result !== 0) {
+        // TODO handle error
+        break
+      }
+
+      if (data.walletType === 'uphold') {
+        if (data.action === 'authorization') {
+          const url = data.args['redirect_url']
+          if (url.length > 0) {
+            window.open(url)
+            break
+          }
+
+          // TODO handle error
+        }
+      }
+
+      state = {
+        ...state,
+        ui
+      }
+      break
+    }
   }
 
   return state

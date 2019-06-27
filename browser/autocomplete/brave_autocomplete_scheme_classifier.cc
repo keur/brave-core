@@ -46,5 +46,7 @@ BraveAutocompleteSchemeClassifier::GetInputTypeForScheme(
   }
 #endif
 
+  // Q: do I need to add it to omnibox
+
   return ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(scheme);
 }

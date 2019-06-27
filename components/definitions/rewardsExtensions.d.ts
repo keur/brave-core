@@ -162,7 +162,9 @@ declare namespace RewardsExtension {
   export enum WalletStatus {
     NOT_CONNECTED = 0,
     CONNECTED = 1,
-    EXPIRED = 2
+    VERIFIED = 2,
+    DISCONECTED_NOT_VERIFIED = 3,
+    DISCONECTED_VERIFIED = 4
   }
 
   export interface ExternalWallet {

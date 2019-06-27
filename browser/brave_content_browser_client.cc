@@ -72,6 +72,10 @@ using extensions::ChromeContentBrowserClientExtensionsPart;
 #include "brave/components/brave_webtorrent/browser/content_browser_client_helper.h"
 #endif
 
+#if BUILDFLAG(BRAVE_REWARDS_ENABLED)
+#include "brave/components/brave_rewards/browser/content_browser_client_helper.h"
+#endif
+
 #if BUILDFLAG(ENABLE_TOR)
 #include "brave/browser/tor/tor_profile_service_factory.h"
 #endif
@@ -136,6 +140,11 @@ void BraveContentBrowserClient::BrowserURLHandlerCreated(
                           content::BrowserURLHandler::null_handler());
   handler->AddHandlerPair(&webtorrent::HandleTorrentURLRewrite,
                           &webtorrent::HandleTorrentURLReverseRewrite);
+#endif
+
+#if BUILDFLAG(BRAVE_REWARDS_ENABLED)
+  handler->AddHandlerPair(&brave_rewards::HandleRewardsURLRewrite,
+                          content::BrowserURLHandler::null_handler());
 #endif
   handler->AddHandlerPair(&HandleURLRewrite, &HandleURLReverseOverrideRewrite);
   ChromeContentBrowserClient::BrowserURLHandlerCreated(handler);
@@ -232,6 +241,13 @@ bool BraveContentBrowserClient::HandleExternalProtocol(
     network::mojom::URLLoaderFactory*& out_factory) {  // NOLINT
 #if BUILDFLAG(ENABLE_BRAVE_WEBTORRENT)
   if (webtorrent::HandleMagnetProtocol(url, web_contents_getter,
+                                       page_transition, has_user_gesture)) {
+    return true;
+  }
+#endif
+
+#if BUILDFLAG(BRAVE_REWARDS_ENABLED)
+  if (brave_rewards::HandleRewardsProtocol(url, web_contents_getter,
                                        page_transition, has_user_gesture)) {
     return true;
   }

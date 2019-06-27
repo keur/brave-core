@@ -64,6 +64,7 @@ declare namespace Rewards {
     ui: {
       emptyWallet: boolean
       modalBackup: boolean
+      modalProgress: boolean
       paymentIdCheck: boolean
       walletRecoverySuccess: boolean | null
       walletServerProblem: boolean
@@ -209,7 +210,9 @@ declare namespace Rewards {
   export enum WalletStatus {
     NOT_CONNECTED = 0,
     CONNECTED = 1,
-    EXPIRED = 2
+    VERIFIED = 2,
+    DISCONECTED_NOT_VERIFIED = 3,
+    DISCONECTED_VERIFIED = 4
   }
 
   export interface ExternalWallet {
@@ -220,5 +223,12 @@ declare namespace Rewards {
     verifyUrl: string
     addUrl: string
     withdrawUrl: string
+  }
+
+  export interface ProcessRewardsPageUrl {
+    result: number
+    walletType: string
+    action: string
+    args: Record<string, string>
   }
 }

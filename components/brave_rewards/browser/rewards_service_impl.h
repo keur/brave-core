@@ -266,6 +266,11 @@ class RewardsServiceImpl : public RewardsService,
       const std::map<std::string, std::string>& args,
       ExternalWalletAuthorizationCallback callback);
 
+  void ProcessRewardsPageUrl(
+      const std::string& path,
+      const std::string& query,
+      ProcessRewardsPageUrlCallback callback) override;
+
   // Testing methods
   void SetLedgerEnvForTesting();
   void StartMonthlyContributionForTest();
@@ -427,6 +432,13 @@ class RewardsServiceImpl : public RewardsService,
     ExternalWalletAuthorizationCallback callback,
     int32_t result,
     const base::flat_map<std::string, std::string>& args);
+
+  void OnProcessExternalWalletAuthorization(
+    const std::string& wallet_type,
+    const std::string& action,
+    ProcessRewardsPageUrlCallback callback,
+    int32_t result,
+    const std::map<std::string, std::string>& args);
 
   // ledger::LedgerClient
   std::string GenerateGUID() const override;

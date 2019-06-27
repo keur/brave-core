@@ -13,6 +13,7 @@ source_set("browser") {
     "auto_contribution_props.h",
     "balance_report.cc",
     "balance_report.h",
+    "content_browser_client_helper.h",
     "rewards_notification_service.cc",
     "rewards_notification_service.h",
     "rewards_notification_service_observer.h",

@@ -3342,4 +3342,62 @@ void RewardsServiceImpl::ExternalWalletAuthorization(
                      std::move(callback)));
 }
 
+void RewardsServiceImpl::OnProcessExternalWalletAuthorization(
+    const std::string& wallet_type,
+    const std::string& action,
+    ProcessRewardsPageUrlCallback callback,
+    int32_t result,
+    const std::map<std::string, std::string>& args) {
+  std::move(callback).Run(result, wallet_type, action, args);
+}
+
+void RewardsServiceImpl::ProcessRewardsPageUrl(
+    const std::string& path,
+    const std::string& query,
+    ProcessRewardsPageUrlCallback callback) {
+  auto path_items = base::SplitString(
+      path,
+      "/",
+      base::TRIM_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+
+  if (path_items.size() < 2) {
+    std::move(callback).Run(ledger::Result::LEDGER_ERROR, "", "", {});
+    return;
+  }
+
+  const std::string action = path_items.at(1);
+  const std::string wallet_type = path_items.at(0);
+
+  std::map<std::string, std::string> query_map;
+
+  const auto url = GURL("brave:/" + path + query);
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    query_map[it.GetKey()] = it.GetUnescapedValue();
+  }
+
+  LOG(ERROR) << "NEJC " << query_map.size();
+
+  if (action == "authorization") {
+    if (wallet_type == ledger::kWalletUphold) {
+      ExternalWalletAuthorization(
+          wallet_type,
+          query_map,
+          base::BindOnce(
+              &RewardsServiceImpl::OnProcessExternalWalletAuthorization,
+              AsWeakPtr(),
+              wallet_type,
+              action,
+              std::move(callback)));
+      return;
+    }
+  }
+
+  std::move(callback).Run(
+      ledger::Result::LEDGER_ERROR,
+      wallet_type,
+      action,
+      {});
+}
+
 }  // namespace brave_rewards

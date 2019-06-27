@@ -368,10 +368,20 @@ void Uphold::WalletAuthorization(
     ledger::ExternalWalletAuthorizationCallback callback) {
   if (args.empty()) {
     callback(ledger::Result::LEDGER_ERROR, {});
+    return;
   }
 
-  const std::string code = args.at("code");
-  const std::string one_time_string = args.at("one_time_string");
+  std::string code;
+  auto it = args.find("code");
+  if (it != args.end()) {
+    code = args.at("code");
+  }
+
+  std::string one_time_string;
+  it = args.find("state");
+  if (it != args.end()) {
+    one_time_string = args.at("state");
+  }
 
   if (code.empty() || one_time_string.empty()) {
     callback(ledger::Result::LEDGER_ERROR, {});
@@ -388,7 +398,7 @@ void Uphold::WalletAuthorization(
   auto headers = RequestAuthorization();
   const std::string payload =
       base::StringPrintf("code=%s&grant_type=authorization_code", code.c_str());
-  const std::string url = GetAPIUrl("oauth2/token");
+  const std::string url = GetAPIUrl("/oauth2/token");
   auto auth_callback = std::bind(&Uphold::OnWalletAuthorization,
                                     this,
                                     callback,

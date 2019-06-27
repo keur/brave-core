@@ -31,6 +31,7 @@ export const defaultState: Rewards.State = {
   ui: {
     emptyWallet: true,
     modalBackup: false,
+    modalProgress: false,
     paymentIdCheck: true,
     walletCorrupted: false,
     walletImported: false,

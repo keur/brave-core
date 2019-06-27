@@ -76,6 +76,13 @@ class SettingsPage extends React.Component<Props, {}> {
       // https://github.com/brave/brave-browser/issues/3061
       this.actions.getWalletPassphrase()
     }
+
+    if (window.location.pathname.length > 1) {
+      const pathElements = window.location.pathname.split('/')
+      if (pathElements.length > 2) {
+        this.actions.processRewardsPageUrl(window.location.pathname, window.location.search)
+      }
+    }
   }
 
   componentDidUpdate (prevProps: Props) {
@@ -133,12 +140,17 @@ class SettingsPage extends React.Component<Props, {}> {
   }
 
   render () {
-    const { enabledMain } = this.props.rewardsData
+    const { enabledMain, ui } = this.props.rewardsData
 
     return (
       <Page>
         <Grid columns={3} customStyle={{ gridGap: '32px' }}>
           <Column size={2} customStyle={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+            {
+              ui.modalProgress
+              ? <div>In progress modal here</div>
+              : null
+            }
             <MainToggle
               onToggle={this.onToggle}
               enabled={enabledMain}
