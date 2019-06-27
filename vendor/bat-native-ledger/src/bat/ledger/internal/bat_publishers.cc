@@ -15,6 +15,7 @@
 #include "bat/ledger/internal/ledger_impl.h"
 #include "bat/ledger/internal/rapidjson_bat_helper.h"
 #include "bat/ledger/internal/static_values.h"
+#include "mojo/public/cpp/bindings/map.h"
 
 /* foo.bar.example.com
    QLD = 'bar'
@@ -854,7 +855,7 @@ void BatPublishers::getPublisherBanner(
       banner.title = values.banner.title_;
       banner.description = values.banner.description_;
       banner.amounts = values.banner.amounts_;
-      banner.social = values.banner.social_;
+      banner.social = mojo::MapToFlatMap(values.banner.social_);
 
       // WebUI must not make external network requests, so map
       // external resopurces to chrome://rewards-image and handle them
@@ -874,7 +875,7 @@ void BatPublishers::getPublisherBanner(
       std::bind(&BatPublishers::onPublisherBanner,
                 this,
                 callback,
-                banner,
+                std::move(banner),
                 _1,
                 _2);
 
@@ -887,7 +888,7 @@ void BatPublishers::onPublisherBanner(
     ledger::Result result,
     ledger::PublisherInfoPtr publisher_info) {
 
-  auto new_banner = std::make_unique<ledger::PublisherBanner>(banner);
+  auto new_banner = ledger::PublisherBanner::New(banner);
 
   if (!publisher_info || result != ledger::Result::LEDGER_OK) {
     callback(std::move(new_banner));

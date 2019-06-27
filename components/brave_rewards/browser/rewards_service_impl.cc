@@ -2088,31 +2088,24 @@ void RewardsServiceImpl::GetPublisherBanner(
 
 void RewardsServiceImpl::OnPublisherBanner(
     GetPublisherBannerCallback callback,
-    const std::string& banner) {
+    ledger::PublisherBannerPtr banner) {
   std::unique_ptr<brave_rewards::PublisherBanner> new_banner;
   new_banner.reset(new brave_rewards::PublisherBanner());
 
-  std::unique_ptr<ledger::PublisherBanner> publisher_banner;
-  publisher_banner.reset(new ledger::PublisherBanner());
-
-  if (!banner.empty()) {
-    publisher_banner->loadFromJson(banner);
-  }
-
-  if (!publisher_banner) {
+  if (!banner) {
     return;
   }
 
-  new_banner->publisher_key = publisher_banner->publisher_key;
-  new_banner->title = publisher_banner->title;
-  new_banner->name = publisher_banner->name;
-  new_banner->description = publisher_banner->description;
-  new_banner->background = publisher_banner->background;
-  new_banner->logo = publisher_banner->logo;
-  new_banner->amounts = publisher_banner->amounts;
-  new_banner->social = publisher_banner->social;
-  new_banner->provider = publisher_banner->provider;
-  new_banner->verified = publisher_banner->verified;
+  new_banner->publisher_key = banner->publisher_key;
+  new_banner->title = banner->title;
+  new_banner->name = banner->name;
+  new_banner->description = banner->description;
+  new_banner->background = banner->background;
+  new_banner->logo = banner->logo;
+  new_banner->amounts = banner->amounts;
+  new_banner->social = mojo::FlatMapToMap(banner->social);
+  new_banner->provider = banner->provider;
+  new_banner->verified = banner->verified;
 
   std::move(callback).Run(std::move(new_banner));
 }
@@ -3251,6 +3244,13 @@ void RewardsServiceImpl::OnFetchBalance(FetchBalanceCallback callback,
                                         int32_t result,
                                         ledger::BalancePtr balance) {
   auto new_balance = std::make_unique<brave_rewards::Balance>();
+
+  LOG(INFO) << "BALANCE REPORT";
+  LOG(INFO) << "total: " << balance->total;
+  for (auto const& rate : balance->rates) {
+    LOG(INFO) << "rate: " << rate.first << " - " << rate.second;
+  }
+
 
   if (balance) {
     new_balance->total = balance->total;

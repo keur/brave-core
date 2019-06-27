@@ -216,7 +216,7 @@ class BatLedgerImpl : public mojom::BatLedger,
 
   static void OnGetPublisherBanner(
       CallbackHolder<GetPublisherBannerCallback>* holder,
-      std::unique_ptr<ledger::PublisherBanner> banner);
+      ledger::PublisherBannerPtr banner);
 
   static void OnAddressesForPaymentId(
       CallbackHolder<GetAddressesForPaymentIdCallback>* holder,
