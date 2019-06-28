@@ -19,6 +19,7 @@
 #include "bat/ads/ads_client.h"
 #include "brave/components/brave_ads/browser/ads_service.h"
 #include "brave/components/brave_ads/browser/background_helper.h"
+#include "brave/components/brave_ads/browser/notification_helper.h"
 #include "brave/components/services/bat_ads/public/interfaces/bat_ads.mojom.h"
 #include "brave/components/brave_rewards/browser/rewards_notification_service_observer.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -95,6 +96,9 @@ class AdsServiceImpl : public AdsService,
 
   void Start();
   bool StartService();
+  void UpdateIsProductionFlag();
+  void UpdateIsDebugFlag();
+  void UpdateIsTestingFlag();
   void Stop();
   void ResetTimer();
   void CheckIdleState();
@@ -109,6 +113,11 @@ class AdsServiceImpl : public AdsService,
       const std::string& notification_id,
       bool by_user,
       base::OnceClosure completed_closure);
+  void OnClick(Profile* profile,
+               const GURL& origin,
+               const std::string& notification_id,
+               const base::Optional<int>& action_index,
+               const base::Optional<base::string16>& reply);
   void OpenSettings(
       Profile* profile,
       const GURL& origin,
@@ -161,6 +170,7 @@ class AdsServiceImpl : public AdsService,
       const std::string& locale,
       ads::OnLoadCallback callback) const override;
   bool IsNetworkConnectionAvailable() override;
+  void ResetTheWholeState(const base::Callback<void(bool)>& callback) override;
 
   // history::HistoryServiceObserver
   void OnURLsDeleted(
@@ -186,6 +196,8 @@ class AdsServiceImpl : public AdsService,
       const std::string& value);
   void OnSaved(const ads::OnSaveCallback& callback, bool success);
   void OnReset(const ads::OnResetCallback& callback, bool success);
+  void OnResetTheWholeState(base::Callback<void(bool)> callback,
+                                 bool success);
   void OnTimer(uint32_t timer_id);
   void MigratePrefs() const;
   bool MigratePrefs(
@@ -198,9 +210,6 @@ class AdsServiceImpl : public AdsService,
   void OnCreate();
   void OnInitialize();
   void MaybeStart(bool should_restart);
-  void OnMaybeStartForRegion(
-      bool should_restart,
-      bool is_supported_region);
   void NotificationTimedOut(
       uint32_t timer_id,
       const std::string& notification_id);
@@ -226,7 +235,6 @@ class AdsServiceImpl : public AdsService,
   std::map<uint32_t, std::unique_ptr<base::OneShotTimer>> timers_;
   uint32_t next_timer_id_;
   uint32_t ads_launch_id_;
-  bool is_supported_region_;
   std::unique_ptr<BundleStateDatabase> bundle_state_backend_;
   NotificationDisplayService* display_service_;  // NOT OWNED
   brave_rewards::RewardsService* rewards_service_;  // NOT OWNED

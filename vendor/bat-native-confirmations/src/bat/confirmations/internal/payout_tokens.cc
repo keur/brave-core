@@ -35,7 +35,7 @@ PayoutTokens::~PayoutTokens() {
 
 void PayoutTokens::Payout(const WalletInfo& wallet_info) {
   DCHECK(!wallet_info.payment_id.empty());
-  DCHECK(!wallet_info.public_key.empty());
+  DCHECK(!wallet_info.private_key.empty());
 
   BLOG(INFO) << "Payout";
 
@@ -119,9 +119,14 @@ void PayoutTokens::OnPayout(const Result result) {
 
     RetryNextPayout();
   } else {
+    BLOG(INFO) << "Successfully paid out tokens";
+
+    confirmations_->AddUnredeemedTransactionsToPendingRewards();
     unblinded_payment_tokens_->RemoveAllTokens();
 
-    BLOG(INFO) << "Successfully paid out tokens";
+    confirmations_->UpdateAdsRewards(true);
+
+    next_retry_start_timer_in_ = 0;
 
     ScheduleNextPayout();
   }
