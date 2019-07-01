@@ -29,6 +29,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "base/guid.h"
+
 #include "url/gurl.h"
 
 using std::placeholders::_1;
@@ -54,6 +56,7 @@ AdsImpl::AdsImpl(AdsClient* ads_client) :
     client_(std::make_unique<Client>(this, ads_client)),
     bundle_(std::make_unique<Bundle>(this, ads_client)),
     ads_serve_(std::make_unique<AdsServe>(this, ads_client, bundle_.get())),
+    notifications_(std::make_unique<Notifications>(this, ads_client)),
     user_model_(nullptr),
     is_initialized_(false),
     is_confirmations_ready_(false),
@@ -80,12 +83,16 @@ void AdsImpl::Initialize() {
 }
 
 void AdsImpl::InitializeStep2() {
+  notifications_->Initialize();
+}
+
+void AdsImpl::InitializeStep3() {
   client_->SetLocales(ads_client_->GetLocales());
 
   LoadUserModel();
 }
 
-void AdsImpl::InitializeStep3() {
+void AdsImpl::InitializeStep4() {
   is_initialized_ = true;
 
   BLOG(INFO) << "Successfully initialized";
@@ -117,6 +124,7 @@ void AdsImpl::Deinitialize() {
   ads_serve_->Reset();
 
   StopDeliveringNotifications();
+  notifications_->RemoveAll();
 
   StopSustainingAdInteraction();
 
@@ -164,7 +172,7 @@ void AdsImpl::OnUserModelLoaded(const Result result, const std::string& json) {
   InitializeUserModel(json);
 
   if (!IsInitialized()) {
-    InitializeStep3();
+    InitializeStep4();
   }
 }
 
@@ -188,6 +196,12 @@ bool AdsImpl::IsMobile() const {
   }
 
   return true;
+}
+
+void AdsImpl::GetNotificationForId(
+    const std::string& id,
+    ads::NotificationInfo* notification) {
+  notifications_->Get(id, notification);
 }
 
 void AdsImpl::OnForeground() {
@@ -258,6 +272,76 @@ bool AdsImpl::IsMediaPlaying() const {
   }
 
   return true;
+}
+
+void AdsImpl::OnNotificationEvent(
+    const std::string& id,
+    const ads::NotificationEventType type) {
+  NotificationInfo notification;
+  if (!notifications_->Get(id, &notification)) {
+    return;
+  }
+
+  switch (type) {
+    case ads::NotificationEventType::VIEWED: {
+      NotificationEventViewed(id, notification);
+      break;
+    }
+
+    case ads::NotificationEventType::CLICKED: {
+      NotificationEventClicked(id, notification);
+      break;
+    }
+
+    case ads::NotificationEventType::DISMISSED: {
+      NotificationEventDismissed(id, notification);
+      break;
+    }
+
+    case ads::NotificationEventType::TIMEOUT: {
+      NotificationEventTimedOut(id, notification);
+      break;
+    }
+  }
+}
+
+void AdsImpl::NotificationEventViewed(
+    const std::string& id,
+    const NotificationInfo& notification) {
+  GenerateAdReportingNotificationShownEvent(notification);
+
+  ConfirmAd(notification, ConfirmationType::VIEW);
+}
+
+void AdsImpl::NotificationEventClicked(
+    const std::string& id,
+    const NotificationInfo& notification) {
+  notifications_->Remove(id);
+
+  GenerateAdReportingNotificationResultEvent(notification,
+      NotificationResultInfoResultType::CLICKED);
+
+  ConfirmAd(notification, ConfirmationType::CLICK);
+}
+
+void AdsImpl::NotificationEventDismissed(
+    const std::string& id,
+    const NotificationInfo& notification) {
+  notifications_->Remove(id);
+
+  GenerateAdReportingNotificationResultEvent(notification,
+      NotificationResultInfoResultType::DISMISSED);
+
+  ConfirmAd(notification, ConfirmationType::DISMISS);
+}
+
+void AdsImpl::NotificationEventTimedOut(
+    const std::string& id,
+    const NotificationInfo& notification) {
+  notifications_->Remove(id);
+
+  GenerateAdReportingNotificationResultEvent(notification,
+      NotificationResultInfoResultType::TIMEOUT);
 }
 
 bool AdsImpl::IsDoNotDisturb() const {
@@ -835,6 +919,7 @@ bool AdsImpl::ShowAd(
   }
 
   auto notification_info = std::make_unique<NotificationInfo>();
+  notification_info->id = base::GenerateGUID();
   notification_info->advertiser = ad_info.advertiser;
   notification_info->category = category;
   notification_info->text = ad_info.notification_text;
@@ -847,14 +932,16 @@ bool AdsImpl::ShowAd(
   // notificationUrl, notificationText, advertiser, uuid, hierarchy}
 
   BLOG(INFO) << "Notification shown:"
+      << std::endl << "  id: " << notification_info->id
       << std::endl << "  campaign_id: " << ad_info.campaign_id
-      << std::endl << "  category: " << category
       << std::endl << "  winnerOverTime: " << GetWinnerOverTimeCategory()
-      << std::endl << "  notificationUrl: " << notification_info->url
-      << std::endl << "  notificationText: " << notification_info->text
       << std::endl << "  advertiser: " << notification_info->advertiser
+      << std::endl << "  category: " << notification_info->category
+      << std::endl << "  notificationText: " << notification_info->text
+      << std::endl << "  notificationUrl: " << notification_info->url
       << std::endl << "  uuid: " << notification_info->uuid;
 
+  notifications_->Add(*notification_info);
   ads_client_->ShowNotification(std::move(notification_info));
 
   client_->AppendCurrentTimeToAdsShownHistory();
@@ -1223,8 +1310,8 @@ void AdsImpl::GenerateAdReportingNotificationShownEvent(
 
   writer.String("notificationClassification");
   writer.StartArray();
-  std::vector<std::string> classifications = base::SplitString(info.category,
-      "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> classifications = base::SplitString(
+      info.category, "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& classification : classifications) {
     writer.String(classification.c_str());
   }
@@ -1246,8 +1333,6 @@ void AdsImpl::GenerateAdReportingNotificationShownEvent(
 
   auto* json = buffer.GetString();
   ads_client_->EventLog(json);
-
-  ConfirmAd(info, ConfirmationType::VIEW);
 }
 
 void AdsImpl::GenerateAdReportingNotificationResultEvent(
@@ -1301,8 +1386,8 @@ void AdsImpl::GenerateAdReportingNotificationResultEvent(
 
   writer.String("notificationClassification");
   writer.StartArray();
-  std::vector<std::string> classifications = base::SplitString(info.category,
-      "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> classifications = base::SplitString(
+      info.category, "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& classification : classifications) {
     writer.String(classification.c_str());
   }
@@ -1324,22 +1409,6 @@ void AdsImpl::GenerateAdReportingNotificationResultEvent(
 
   auto* json = buffer.GetString();
   ads_client_->EventLog(json);
-
-  switch (type) {
-    case NotificationResultInfoResultType::CLICKED: {
-      ConfirmAd(info, ConfirmationType::CLICK);
-      break;
-    }
-
-    case NotificationResultInfoResultType::DISMISSED: {
-      ConfirmAd(info, ConfirmationType::DISMISS);
-      break;
-    }
-
-    case NotificationResultInfoResultType::TIMEOUT: {
-      break;
-    }
-  }
 }
 
 void AdsImpl::GenerateAdReportingConfirmationEvent(

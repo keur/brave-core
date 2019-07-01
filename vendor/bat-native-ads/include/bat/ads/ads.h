@@ -7,10 +7,11 @@
 #define BAT_ADS_ADS_H_
 
 #include <string>
+#include <memory>
 
 #include "bat/ads/ads_client.h"
 #include "bat/ads/export.h"
-#include "bat/ads/notification_result_type.h"
+#include "bat/ads/notification_event_type.h"
 #include "bat/ads/notification_info.h"
 
 namespace ads {
@@ -31,6 +32,9 @@ extern const char _catalog_schema_name[];
 extern const char _catalog_name[];
 extern const char _client_name[];
 
+using GetNotificationForIdCallback =
+    std::function<void(std::unique_ptr<NotificationInfo> notification)>;
+
 class ADS_EXPORT Ads {
  public:
   Ads() = default;
@@ -43,6 +47,11 @@ class ADS_EXPORT Ads {
 
   // Should be called when Ads are enabled or disabled on the Client
   virtual void Initialize() = 0;
+
+  // Should return the notification for the specified id
+  virtual void GetNotificationForId(
+      const std::string& id,
+      ads::NotificationInfo* notification) = 0;
 
   // Should be called when the browser enters the foreground
   virtual void OnForeground() = 0;
@@ -65,6 +74,11 @@ class ADS_EXPORT Ads {
 
   // Should be called to record when a tab has stopped playing media (A/V)
   virtual void OnMediaStopped(const int32_t tab_id) = 0;
+
+  // Should be called when a notification event is triggered
+  virtual void OnNotificationEvent(
+      const std::string& id,
+      const ads::NotificationEventType type) = 0;
 
   // Should be called to record user activity on a browser tab
   virtual void TabUpdated(
@@ -98,18 +112,6 @@ class ADS_EXPORT Ads {
 
   // Should be called when a timer is triggered
   virtual void OnTimer(const uint32_t timer_id) = 0;
-
-  // Should be called when a Notification has been shown
-  virtual void GenerateAdReportingNotificationShownEvent(
-      const NotificationInfo& info) = 0;
-
-  // Should be called when a Notification has been clicked, dismissed or times
-  // out on the Client. Dismiss events for local Notifications may not be
-  // available for every version of Android, making the Dismiss notification
-  // capture optional for Android on 100% of devices
-  virtual void GenerateAdReportingNotificationResultEvent(
-      const NotificationInfo& info,
-      const NotificationResultInfoResultType type) = 0;
 
  private:
   // Not copyable, not assignable

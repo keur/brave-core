@@ -15,7 +15,7 @@
 
 #include "bat/ads/ads.h"
 #include "bat/ads/ad_info.h"
-#include "bat/ads/notification_result_type.h"
+#include "bat/ads/notification_event_type.h"
 #include "bat/ads/notification_info.h"
 
 #include "bat/ads/internal/ads_serve.h"
@@ -23,8 +23,10 @@
 #include "bat/ads/internal/event_type_destroy_info.h"
 #include "bat/ads/internal/event_type_focus_info.h"
 #include "bat/ads/internal/event_type_load_info.h"
+#include "bat/ads/internal/notification_result_type.h"
 #include "bat/ads/internal/client.h"
 #include "bat/ads/internal/bundle.h"
+#include "bat/ads/internal/notifications.h"
 
 #include "bat/usermodel/user_model.h"
 
@@ -44,6 +46,7 @@ class AdsImpl : public Ads {
   void Initialize() override;
   void InitializeStep2();
   void InitializeStep3();
+  void InitializeStep4();
   void Deinitialize();
   bool IsInitialized();
 
@@ -52,6 +55,10 @@ class AdsImpl : public Ads {
   void InitializeUserModel(const std::string& json);
 
   bool IsMobile() const;
+
+  void GetNotificationForId(
+      const std::string& id,
+      ads::NotificationInfo* notification) override;
 
   bool is_foreground_;
   void OnForeground() override;
@@ -65,6 +72,22 @@ class AdsImpl : public Ads {
   void OnMediaPlaying(const int32_t tab_id) override;
   void OnMediaStopped(const int32_t tab_id) override;
   bool IsMediaPlaying() const;
+
+  void OnNotificationEvent(
+      const std::string& id,
+      const ads::NotificationEventType type) override;
+  void NotificationEventViewed(
+      const std::string& id,
+      const NotificationInfo& notification);
+  void NotificationEventClicked(
+      const std::string& id,
+      const NotificationInfo& notification);
+  void NotificationEventDismissed(
+      const std::string& id,
+      const NotificationInfo& notification);
+  void NotificationEventTimedOut(
+      const std::string& id,
+      const NotificationInfo& notification);
 
   bool IsDoNotDisturb() const;
 
@@ -152,11 +175,6 @@ class AdsImpl : public Ads {
   void OnTimer(const uint32_t timer_id) override;
 
   uint64_t next_easter_egg_timestamp_in_seconds_;
-  void GenerateAdReportingNotificationShownEvent(
-      const NotificationInfo& info) override;
-  void GenerateAdReportingNotificationResultEvent(
-      const NotificationInfo& info,
-      const NotificationResultInfoResultType type) override;
   void GenerateAdReportingConfirmationEvent(const NotificationInfo& info);
   void GenerateAdReportingLoadEvent(const LoadInfo& info);
   void GenerateAdReportingBackgroundEvent();
@@ -166,6 +184,11 @@ class AdsImpl : public Ads {
   void GenerateAdReportingFocusEvent(const FocusInfo& info);
   void GenerateAdReportingRestartEvent();
   void GenerateAdReportingSettingsEvent();
+  void GenerateAdReportingNotificationShownEvent(
+      const NotificationInfo& info);
+  void GenerateAdReportingNotificationResultEvent(
+      const NotificationInfo& info,
+      const NotificationResultInfoResultType type);
 
   bool IsNotificationFromSampleCatalog(const NotificationInfo& info) const;
 
@@ -175,6 +198,7 @@ class AdsImpl : public Ads {
   std::unique_ptr<Client> client_;
   std::unique_ptr<Bundle> bundle_;
   std::unique_ptr<AdsServe> ads_serve_;
+  std::unique_ptr<Notifications> notifications_;
   std::unique_ptr<usermodel::UserModel> user_model_;
 
  private:

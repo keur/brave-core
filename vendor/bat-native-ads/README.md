@@ -68,6 +68,13 @@ void OnMediaStopped(
     const int32_t tab_id)
 ```
 
+`OnNotificationEvent` should be called when a notifcation event is triggered
+```
+void OnNotificationEvent(
+    const std::string id,
+    const NotificationActionType type)
+```
+
 `TabUpdated` should be called to record user activity on a browser tab
 ```
 void TabUpdated(
@@ -116,19 +123,6 @@ void ServeSampleAd()
 ```
 void OnTimer(
     const uint32_t timer_id)
-```
-
-`GenerateAdReportingNotificationShownEvent` should be called when a notification has been shown
-```
-void GenerateAdReportingNotificationShownEvent(
-    const NotificationInfo& info)
-```
-
-`GenerateAdReportingNotificationResultEvent` should be called when a notification has been clicked, dismissed or times out on the Client. Dismiss events for local Notifications may not be available for every version of Android, making the Dismiss notification capture optional for Android devices
-```
-void GenerateAdReportingNotificationResultEvent(
-    const NotificationInfo& info,
-    const NotificationResultInfoResultType type)
 ```
 
 ### Client
@@ -182,11 +176,6 @@ void LoadUserModelForLocale(
     OnLoadCallback callback) const
 ```
 
-`GenerateUUID` should generate and return a v4 UUID
-```
-const std::string GenerateUUID() const
-```
-
 `IsForeground` should return `true` if the browser is in the foreground otherwise returns `false`
 ```
 bool IsForeground() const
@@ -200,6 +189,11 @@ bool IsNotificationsAvailable() const
 `ShowNotification` should show a notification
 ```
 void ShowNotification(std::unique_ptr<NotificationInfo> info)
+```
+
+`CloseNotification` should close a notification
+```
+void CloseNotification(const std::string& id)
 ```
 
 `SetCatalogIssuers` should notify that the catalog issuers have changed

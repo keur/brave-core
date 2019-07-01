@@ -14,9 +14,9 @@ namespace bat_ads {
 
 namespace {
 
-ads::NotificationResultInfoResultType ToNotificationResultInfoResultType(
+ads::NotificationEventType ToNotificationEventType(
     int32_t result_type) {
-  return (ads::NotificationResultInfoResultType)result_type;
+  return (ads::NotificationEventType)result_type;
 }
 
 }
@@ -34,9 +34,18 @@ void BatAdsImpl::Initialize(InitializeCallback callback) {
   std::move(callback).Run();
 }
 
-void BatAdsImpl::ClassifyPage(const std::string& url,
-                              const std::string& page) {
+void BatAdsImpl::ClassifyPage(
+    const std::string& url,
+    const std::string& page) {
   ads_->ClassifyPage(url, page);
+}
+
+void BatAdsImpl::GetNotificationForId(
+    const std::string& id,
+    GetNotificationForIdCallback callback) {
+  ads::NotificationInfo notification;
+  ads_->GetNotificationForId(id, &notification);
+  std::move(callback).Run(notification.ToJson());
 }
 
 void BatAdsImpl::TabClosed(int32_t tab_id) {
@@ -71,6 +80,12 @@ void BatAdsImpl::OnMediaStopped(int32_t tab_id) {
   ads_->OnMediaStopped(tab_id);
 }
 
+void BatAdsImpl::OnNotificationEvent(
+    const std::string& id,
+    const int32_t type) {
+  ads_->OnNotificationEvent(id, ToNotificationEventType(type));
+}
+
 void BatAdsImpl::TabUpdated(int32_t tab_id,
                 const std::string& url,
                 bool is_active,
@@ -90,25 +105,6 @@ void BatAdsImpl::SetConfirmationsIsReady(const bool is_ready) {
 
 void BatAdsImpl::ServeSampleAd() {
   ads_->ServeSampleAd();
-}
-
-void BatAdsImpl::GenerateAdReportingNotificationShownEvent(
-      const std::string& notification_info) {
-  auto info = std::make_unique<ads::NotificationInfo>();
-  if (info->FromJson(notification_info) == ads::Result::SUCCESS) {
-    ads_->GenerateAdReportingNotificationShownEvent(*info);
-  }
-}
-
-void BatAdsImpl::GenerateAdReportingNotificationResultEvent(
-      const std::string& notification_info,
-      int32_t result_type) {
-  auto info = std::make_unique<ads::NotificationInfo>();
-  if (info->FromJson(notification_info) == ads::Result::SUCCESS) {
-    ads_->GenerateAdReportingNotificationResultEvent(
-        *info,
-        ToNotificationResultInfoResultType(result_type));
-  }
 }
 
 }  // namespace bat_ads

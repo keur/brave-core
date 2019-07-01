@@ -233,8 +233,6 @@ BATClassAdsBridge(BOOL, isProduction, setProduction, _is_production)
   if (info.get() != nullptr) {
     const auto notification = [[BATAdsNotification alloc] initWithNotificationInfo:*info.get()];
     [self.delegate braveAds:self showNotification:notification];
-
-    ads->GenerateAdReportingNotificationShownEvent(*info.get());
   }
 }
 
@@ -452,13 +450,6 @@ BATClassAdsBridge(BOOL, isProduction, setProduction, _is_production)
 - (std::unique_ptr<ads::LogStream>)log:(const char *)file line:(const int)line logLevel:(const ads::LogLevel)log_level
 {
   return std::make_unique<RewardsLogStream>(file, line, log_level);
-}
-
-#pragma mark - Misc
-
-- (const std::string)generateUUID
-{
-  return [self.commonOps generateUUID];
 }
 
 @end
