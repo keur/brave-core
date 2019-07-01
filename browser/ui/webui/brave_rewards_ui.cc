@@ -1267,9 +1267,9 @@ void RewardsDOMHandler::GetExternalWallet(const base::ListValue* args) {
     return;
   }
 
-  const std::string type = args->GetList()[0].GetString();
+  const std::string wallet_type = args->GetList()[0].GetString();
   rewards_service_->GetExternalWallet(
-      type,
+      wallet_type,
       base::BindOnce(&RewardsDOMHandler::OnGetExternalWallet,
                      weak_factory_.GetWeakPtr()));
 }

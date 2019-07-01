@@ -2622,11 +2622,12 @@ void RewardsServiceImpl::HandleFlags(const std::string& options) {
     if (name == "uphold-token") {
       std::string token = base::ToLowerASCII(value);
 
-      ledger::ExternalWallet uphold;
-      uphold.token = token;
-      uphold.address = "c5fd7219-6586-4fe1-b947-0cbd25040ca8";
-      uphold.status = 1;
-      SetExternalWallet(ledger::kWalletUphold, uphold);
+      auto uphold = ledger::ExternalWallet::New();
+      uphold->token = token;
+      uphold->address = "c5fd7219-6586-4fe1-b947-0cbd25040ca8";
+      uphold->status = 1;
+      uphold->one_time_string = "";
+      SaveExternalWallet(ledger::kWalletUphold, std::move(uphold));
       continue;
     }
   }
@@ -3237,19 +3238,20 @@ void RewardsServiceImpl::FetchBalance(FetchBalanceCallback callback) {
                      std::move(callback)));
 }
 
-void RewardsServiceImpl::SetExternalWallet(const std::string& key,
-                                           ledger::ExternalWallet wallet) {
+void RewardsServiceImpl::SaveExternalWallet(const std::string& wallet_type,
+                                            ledger::ExternalWalletPtr wallet) {
   auto* perfs =
       profile_->GetPrefs()->GetDictionary(prefs::kRewardsExternalWallets);
 
   base::Value new_perfs(perfs->Clone());
 
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("token", wallet.token);
-  dict.SetStringKey("address", wallet.address);
-  dict.SetIntKey("status", static_cast<int>(wallet.status));
+  dict.SetStringKey("token", wallet->token);
+  dict.SetStringKey("address", wallet->address);
+  dict.SetIntKey("status", static_cast<int>(wallet->status));
+  dict.SetStringKey("one_time_string", wallet->one_time_string);
 
-  new_perfs.SetKey(key, std::move(dict));
+  new_perfs.SetKey(wallet_type, std::move(dict));
 
   profile_->GetPrefs()->Set(prefs::kRewardsExternalWallets, new_perfs);
 }
@@ -3272,6 +3274,11 @@ void RewardsServiceImpl::GetExternalWallets(
     auto* address = it.second.FindKey("address");
     if (address) {
       wallet->address = address->GetString();
+    }
+
+    auto* one_time_string = it.second.FindKey("one_time_string");
+    if (one_time_string) {
+      wallet->one_time_string = one_time_string->GetString();
     }
 
     auto* status = it.second.FindKey("status");
@@ -3309,6 +3316,27 @@ void RewardsServiceImpl::GetExternalWallet(const std::string& wallet_type,
                                            GetExternalWalletCallback callback) {
   bat_ledger_->GetExternalWallet(wallet_type,
       base::BindOnce(&RewardsServiceImpl::OnGetExternalWallet,
+                     AsWeakPtr(),
+                     wallet_type,
+                     std::move(callback)));
+}
+
+void RewardsServiceImpl::OnExternalWalletAuthorization(
+    const std::string& wallet_type,
+    ExternalWalletAuthorizationCallback callback,
+    int32_t result,
+    const base::flat_map<std::string, std::string>& args) {
+  std::move(callback).Run(result, mojo::FlatMapToMap(args));
+}
+
+void RewardsServiceImpl::ExternalWalletAuthorization(
+      const std::string& wallet_type,
+      const std::map<std::string, std::string>& args,
+      ExternalWalletAuthorizationCallback callback) {
+  bat_ledger_->ExternalWalletAuthorization(
+      wallet_type,
+      mojo::MapToFlatMap(args),
+      base::BindOnce(&RewardsServiceImpl::OnExternalWalletAuthorization,
                      AsWeakPtr(),
                      wallet_type,
                      std::move(callback)));

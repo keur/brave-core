@@ -90,4 +90,5 @@ struct ExternalWallet {
   string verify_url;
   string add_url;
   string withdraw_url;
+  string one_time_string;
 };
