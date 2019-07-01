@@ -18,7 +18,7 @@ class NotificationHandler : public NotificationHandler_ChromiumImpl {
     EXTENSION = 2,
     SEND_TAB_TO_SELF = 3,
     TRANSIENT = 4,
-    BRAVE_ADS = 5,
+    BRAVE_ADS = 4,
     MAX = BRAVE_ADS,
   };
 };
