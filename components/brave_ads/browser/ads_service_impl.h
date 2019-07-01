@@ -91,9 +91,6 @@ class AdsServiceImpl : public AdsService,
  private:
   friend class AdsNotificationHandler;
 
-  typedef std::map<std::string, std::unique_ptr<const ads::NotificationInfo>>
-      NotificationInfoMap;
-
   void Start();
   bool StartService();
   void UpdateIsProductionFlag();
@@ -113,23 +110,17 @@ class AdsServiceImpl : public AdsService,
       const std::string& notification_id,
       bool by_user,
       base::OnceClosure completed_closure);
-  void OnClick(Profile* profile,
-               const GURL& origin,
-               const std::string& notification_id,
-               const base::Optional<int>& action_index,
-               const base::Optional<base::string16>& reply);
-  void OpenSettings(
-      Profile* profile,
-      const GURL& origin,
-      bool should_close);
+  void ViewAd(const std::string& id);
+  void OnViewAd(const std::string& json);
+  void OpenNewTabWithUrl(const std::string& url);
 
   // AdsClient implementation
   bool IsForeground() const override;
   const std::string GetAdsLocale() const override;
   void GetClientInfo(ads::ClientInfo* info) const override;
   const std::vector<std::string> GetLocales() const override;
-  const std::string GenerateUUID() const override;
   void ShowNotification(std::unique_ptr<ads::NotificationInfo> info) override;
+  void CloseNotification(const std::string& id) override;
   void SetCatalogIssuers(std::unique_ptr<ads::IssuersInfo> info) override;
   void ConfirmAd(std::unique_ptr<ads::NotificationInfo> info) override;
   uint32_t SetTimer(const uint64_t time_offset) override;
@@ -252,7 +243,6 @@ class AdsServiceImpl : public AdsService,
   bat_ads::mojom::BatAdsAssociatedPtr bat_ads_;
   bat_ads::mojom::BatAdsServicePtr bat_ads_service_;
 
-  NotificationInfoMap notification_ids_;
   base::flat_set<network::SimpleURLLoader*> url_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsServiceImpl);

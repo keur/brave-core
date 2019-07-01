@@ -27,8 +27,10 @@ class BatAdsImpl : public mojom::BatAds {
 
   // Overridden from mojom::BatAds:
   void Initialize(InitializeCallback callback) override;
-  void ClassifyPage(const std::string& url,
-                    const std::string& page) override;
+  void ClassifyPage(const std::string& url, const std::string& page) override;
+  void GetNotificationForId(
+      const std::string& id,
+      GetNotificationForIdCallback callback) override;
   void TabClosed(int32_t tab_id) override;
   void OnTimer(uint32_t timer_id) override;
   void OnUnIdle() override;
@@ -37,18 +39,15 @@ class BatAdsImpl : public mojom::BatAds {
   void OnBackground() override;
   void OnMediaPlaying(int32_t tab_id) override;
   void OnMediaStopped(int32_t tab_id) override;
-  void TabUpdated(int32_t tab_id,
-                  const std::string& url,
-                  bool is_active,
-                  bool is_incognito) override;
+  void OnNotificationEvent(const std::string& id, const int32_t type) override;
+  void TabUpdated(
+      int32_t tab_id,
+      const std::string& url,
+      bool is_active,
+      bool is_incognito) override;
   void RemoveAllHistory(RemoveAllHistoryCallback callback) override;
   void SetConfirmationsIsReady(const bool is_ready) override;
   void ServeSampleAd() override;
-  void GenerateAdReportingNotificationShownEvent(
-      const std::string& notification_info) override;
-  void GenerateAdReportingNotificationResultEvent(
-      const std::string& notification_info,
-      int32_t event_type) override;
 
  private:
   std::unique_ptr<BatAdsClientMojoBridge> bat_ads_client_mojo_proxy_;
