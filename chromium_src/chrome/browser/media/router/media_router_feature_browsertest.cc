@@ -24,6 +24,7 @@ class MediaRouterTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaRouterTest, MediaRouterDisabled) {
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kEnableMediaRouter, false);
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kEnableMediaRouter,
+                                               false);
   EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
 }
