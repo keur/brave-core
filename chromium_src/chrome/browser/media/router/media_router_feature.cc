@@ -13,15 +13,15 @@
 
 namespace media_router {
 
-bool IsMediaRouterFeatureEnabled() {
-  return extensions::FeatureSwitch::load_media_router_component_extension()
-      ->IsEnabled();
-}
-
 bool MediaRouterEnabled(content::BrowserContext* context) {
-  if (!IsMediaRouterFeatureEnabled())
-    return false;
-  return MediaRouterEnabled_ChromiumImpl(context);
+#if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
+  const PrefService::Preference* pref = GetMediaRouterPref(context);
+  bool allowed = false;
+  CHECK(pref->GetValue()->GetAsBoolean(&allowed));
+  return allowed && !Profile::FromBrowserContext(context)->IsGuestSession();
+#else   // !(defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS))
+  return false;
+#endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 }  // namespace media_router
